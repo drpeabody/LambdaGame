@@ -19,6 +19,7 @@
   "homepage": "https://github.com/drpeabody/LambdaGame#readme",
   "dependencies": {
     "mongod": "^2.0.0",
-    "mongodb": "^3.1.13"
+    "mongodb": "^3.1.13",
+    "socket.io": "^2.2.0"
   }
 }

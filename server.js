@@ -1,4 +1,5 @@
 
+const io = require('socket.io')(8080);
 const MongoClient = require('mongodb').MongoClient;
 const mongod = require('mongod');
 // const exec = require('child_process').exec;
@@ -9,6 +10,7 @@ const stdin = process.openStdin();
 var db_client;
 var db;
 const server = new mongod({ port: 27017, dbpath: 'data' });
+
 
 mongoInsertOne = (collection, doc, callback) => {
 	db.collection(collection).insertOne(doc, function(err, result) {
@@ -37,7 +39,7 @@ mongoUpdateOne = (collection, query, modifier, callback) => {
 		else console.log(err);
   	});  
 }
-mongoDeleteOne = function(collection, query, callback) {
+mongoDeleteOne = (collection, query, callback) => {
   	db.collection(collection).deleteOne(query, function(err, result) {
 		if(!err) {
 			console.log("Removed " + result.result.n + " documents.");
@@ -46,7 +48,6 @@ mongoDeleteOne = function(collection, query, callback) {
 		else console.log(err);
   	});    
 }
-
 
 
 startup = () => {
@@ -78,7 +79,6 @@ startup = () => {
 		});
 	});
 
-
 	stdin.addListener("data", function(d) {
 		var g = String(d).trim();
 		if(g === 'exit') process.exit();
@@ -89,11 +89,26 @@ startup = () => {
 		}
 	});
 
+// io.origins((origin, callback) => {
+//   if (origin !== 'https://foo.example.com') {
+//       return callback('origin not allowed', false);
+//   }
+//   callback(null, true);
+// });
+	io.on('connection', function (socket) {
+		socket.emit('news', { hello: 'world' });
+			socket.on('my other event', function (data) {
+			console.log(data);
+		});
+	});
+
 	console.log('Server Started');
 
 }
 
-startup();
+try{
+	startup();	
+} catch(err) { console.log(err); }
 
 
 
