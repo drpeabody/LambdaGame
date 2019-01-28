@@ -44,7 +44,9 @@
 	hasAskedOnce = false;
 
 	connect = (id, pwd) => {
-		socket = io('http://localhost', {id: id, pwd: pwd});
+		// io.origins('*:*');
+		// socket = io('http://192.168.110.68:8080/', {id: id, pwd: pwd});
+		socket = io('http://localhost:8080/', {id: id, pwd: pwd});
 		socket.on('news', function (data) {
 			console.log(data);
 			socket.emit('my other event', { my: 'data' });

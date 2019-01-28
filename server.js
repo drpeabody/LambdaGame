@@ -1,4 +1,5 @@
 
+const app = require('http').createServer(handler);
 const io = require('socket.io')(app);
 const MongoClient = require('mongodb').MongoClient;
 const mongod = require('mongod');
@@ -11,20 +12,26 @@ var db_client;
 var db;
 const server = new mongod({ port: 27017, dbpath: 'data' });
 var fs = require('fs');
-var app = require('http').createServer(handler)
-app.listen(8080);
 
 function handler (req, res) {
-  fs.readFile('public/index.html',
-  function (err, data) {
-    if (err) {
-      res.writeHead(500);
-      return res.end('Error loading index.html');
-    }
+	var headers = {
+	    'Access-Control-Allow-Origin': '*',
+	    'Access-Control-Allow-Methods': 'OPTIONS, POST, GET',
+	    'Access-Control-Max-Age': 2592000, // 30 days
+	    // 'Content-Type': 'contentType'
+	};
 
-    res.writeHead(200);
-    res.end(data);
-  });
+	res.writeHead(200, headers);
+	if(req.url === '/')
+		fs.readFile('public/index.html', function (err, data) {
+		    if (err) {
+		      res.writeHead(500);
+		      return res.end('Error loading index.html');
+		    }
+
+		    res.end(data);
+		});
+
 }
 
 mongoInsertOne = (collection, doc, callback) => {
@@ -104,13 +111,11 @@ startup = () => {
 		}
 	});
 
-// io.origins((origin, callback) => {
-//   if (origin !== 'https://foo.example.com') {
-//       return callback('origin not allowed', false);
-//   }
-//   callback(null, true);
-// });
+	app.listen(8080);
+
+	io.origins('*:*');
 	io.on('connection', function (socket) {
+		console.log('Connected');
 		socket.emit('news', { hello: 'world' });
 			socket.on('my other event', function (data) {
 			console.log(data);
