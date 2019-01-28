@@ -1,5 +1,5 @@
 
-const io = require('socket.io')(8080);
+const io = require('socket.io')(app);
 const MongoClient = require('mongodb').MongoClient;
 const mongod = require('mongod');
 // const exec = require('child_process').exec;
@@ -10,7 +10,22 @@ const stdin = process.openStdin();
 var db_client;
 var db;
 const server = new mongod({ port: 27017, dbpath: 'data' });
+var fs = require('fs');
+var app = require('http').createServer(handler)
+app.listen(8080);
 
+function handler (req, res) {
+  fs.readFile('public/index.html',
+  function (err, data) {
+    if (err) {
+      res.writeHead(500);
+      return res.end('Error loading index.html');
+    }
+
+    res.writeHead(200);
+    res.end(data);
+  });
+}
 
 mongoInsertOne = (collection, doc, callback) => {
 	db.collection(collection).insertOne(doc, function(err, result) {
