@@ -50,7 +50,7 @@
 		socket = io('http://localhost:8080/', {id: id});
 		socket.emit('Username', id);
 		socket.on('AccountExists', function(doesAccountExist) {
-			g('input-form-label').innerHTML = 'This username already exists';
+			g('input-form-label').innerHTML = 'Please enter a valid password';
 		});
 		// socket.on('news', function (data) {
 		// 	console.log(data);

@@ -116,25 +116,22 @@ startup = () => {
 	io.on('connection', function (socket) {
 		console.log('Connected');
 		socket.on('Username', function (name) {
-			var doesHashExist = 1 ;
-			while (doesHashExist == 1)
-			{
-				var hash = '';
-				var chars = '0123456789abcdefghijklmnopqrstuvwxyz';
-	    		for (var i = 4; i > 0; --i) hash += chars[Math.floor(Math.random() * chars.length)];
-	    		doesHashExist = 0 ; // replace this later	
-	    		// set doesHashExist = 0 if mongodb doesn't have this hash
-	    	}  		
-    		var doesAccountExist = 0 ;
-    		// Add user to MongoDB if user has not already registered. 
-    		// Set doesAccountExist = 1 if user has registered. 
-    		if (doesAccountExist == 1)
-    		{
-    			socket.emit('AccountExists', doesAccountExist);
-    			return ;
-    		}
-    		console.log("New user " + name + " registered. Assigned Hash key " + hash);
-    		// Make mongoDB account. 
+			// var doesHashExist = 1 ;
+			// while (doesHashExist == 1)
+			// {
+			// 	var hash = '';
+			// 	var chars = '0123456789abcdefghijklmnopqrstuvwxyz';
+	  //   		for (var i = 4; i > 0; --i) hash += chars[Math.floor(Math.random() * chars.length)];
+	  //   		// set doesHashExist = 0 if mongodb doesn't have this hash
+	  //   	}  		
+   //  		var doesAccountExist = 0 ;
+   //  		// Add user to MongoDB if user has not already registered. 
+   //  		// Set doesAccountExist = 1 if user has registered. 
+   //  		if (doesAccountExist == 1)
+   //  		{
+   //  			socket.emit('AccountExists', doesAccountExist);
+   //  		}
+   //  		console.log("New user " + name + " registered. Assigned Hash key " + hash);
 		});
 	});
 
