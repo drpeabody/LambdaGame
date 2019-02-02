@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>The Lambda Game</title>
+	<style type="text/css">
+		body {
+			text-align: center;
+			background: #112;
+		}
+		canvas {
+			border : 0px;
+		}
+		#login-form {
+			color: #fff;
+			margin-top: 40vh;
+			text-align: center;
+		}
+		.row {
+			overflow-x: hidden;
+			width: 100%;
+			margin: 40px 0 0 0;
+		}
+		.label {
+			font-size: 2em;
+			margin-bottom: 5vh;
+		}
+	</style>
+</head>
+<body>
+	<canvas id='fuckyou' ></canvas>
+</body>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script> -->
+<script type="text/javascript">
+	canvas = document.getElementById('fuckyou');
+	canvas.width = window.innerWidth * 0.9;
+	canvas.height = window.innerHeight * 0.9;
+	ctx = canvas.getContext('2d');
+	mapSize = 4000;
+
+	player = {
+		x: Math.random()*mapSize, y: Math.random()*mapSize,
+		bWDown: false, bADown: false, bSDown: false, bDDown: false //Input Tracking var
+	}
+
+	tree = {
+		// x: Math.random()*mapSize, y: Math.random()*mapSize
+		x: player.x + 30, y: player.y + 30
+	}
+
+	document.onkeydown = (e) => {
+		var key = e.key ;
+		if ((key === 'w')) player.bWDown = true ;
+		if ((key === 'a')) player.bADown = true ;
+		if ((key === 's')) player.bSDown = true ;
+		if ((key === 'd')) player.bDDown = true ;
+	}
+
+	document.onkeyup = (e) => {
+		var key = e.key ;
+		if ((key === 'w')) player.bWDown = false ;
+		if ((key === 'a')) player.bADown = false ;
+		if ((key === 's')) player.bSDown = false ;
+		if ((key === 'd')) player.bDDown = false ;
+	}
+
+	draw = () => {
+		ctx.fillStyle = "#113311";
+		ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+		ctx.fillStyle = "#441111";
+		ctx.fillRect(canvas.width/2, canvas.height/2, 10, 10);
+
+		ctx.fillStyle = "#111199";
+		ctx.fillRect(tree.x - player.x, tree.y - player.y, 20, 20);
+
+		requestAnimationFrame(draw);
+
+		update();
+	}
+
+	update = () => {
+		//Sync with server - All Socet.emit here
+		//Process input
+		if (player.bWDown) player.y += 1;
+		if (player.bADown) player.x -= 1;
+		if (player.bSDown) player.y -= 1;
+		if (player.bDDown) player.x += 1;
+	}
+
+	draw();
+
+
+	
+</script>
+</html>

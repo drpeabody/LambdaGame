@@ -45,11 +45,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
 <script type="text/javascript">
 	g = (id) => document.getElementById(id);
-	hasAskedOnce = false;
-	var playerSquareSize = 50 ;
+	var hasAskedOnce = false;
+	var playerSquareSize = 50;
+
+
 	connect = (id) => {
 		// io.origins('*:*');
-		// socket = io('http://192.168.110.68:8080/', {id: id, pwd: pwd});
 		// socket = io('http://192.168.0.130:8080/', {id: id});
 		socket = io('http://localhost:8080/', {id: id});
 		socket.emit('Username', id);
@@ -65,24 +66,19 @@
 			canvas.width = window.innerWidth;
 			canvas.height = window.innerHeight;
 			var canvaswidth = canvas.width;
-			var canvasheight = canvas.height ;
+			var canvasheight = canvas.height;
 			canvas.style.position = "absolute";
 			var body = document.getElementsByTagName("body")[0];
 			body.appendChild(canvas);
 			console.log(canvaswidth);
 			console.log(canvasheight);
 			socket.emit('WindowDetails', {widthy: Number(canvaswidth), heighty:Number(canvasheight)});
-			cursorLayer = document.getElementById("CursorLayer");
+			// cursorLayer = document.getElementById("CursorLayer");
 			var ctx = canvas.getContext("2d");
+			
 			ctx.fillStyle = "#7cfc00";
-			// Code to populate canvas
-			for (var y = 0 ; y < canvas.height ; y++)
-			{
-				for (var x = 0 ; x < canvas.width ; x++)
-				{
-					ctx.fillRect(x, y, 1, 1);
-				}
-			}
+			ctx.fillRect(0, 0, canvas.width, canvas.height);
+
 			for (var i = 0 ; i < data.list.length ; i++)
 			{
 				if (data.list[i].x >= data.actualX && data.list[i].x <= (data.actualX+canvaswidth) && (data.list[i].y >= data.actualY && data.list[i].y <= (data.actualY-canvasheight)))
