@@ -7,6 +7,9 @@
 		body {
 			background: #112;
 		}
+		canvas {
+			border : 0px;
+		}
 		#login-form {
 			color: #fff;
 			margin-top: 40vh;
@@ -43,14 +46,63 @@
 <script type="text/javascript">
 	g = (id) => document.getElementById(id);
 	hasAskedOnce = false;
-
+	var playerSquareSize = 50 ;
 	connect = (id) => {
 		// io.origins('*:*');
 		// socket = io('http://192.168.110.68:8080/', {id: id, pwd: pwd});
+		// socket = io('http://192.168.0.130:8080/', {id: id});
 		socket = io('http://localhost:8080/', {id: id});
 		socket.emit('Username', id);
 		socket.on('AccountExists', function(doesAccountExist) {
 			g('input-form-label').innerHTML = 'This username already exists';
+		});
+		
+		socket.on('MapGen', function(data) {
+			document.body.innerHTML = '';
+			var canvas = document.createElement('canvas');
+			// Get the canvas element form the page
+			canvas.id = "CursorLayer";
+			canvas.width = window.innerWidth;
+			canvas.height = window.innerHeight;
+			var canvaswidth = canvas.width;
+			var canvasheight = canvas.height ;
+			canvas.style.position = "absolute";
+			var body = document.getElementsByTagName("body")[0];
+			body.appendChild(canvas);
+			console.log(canvaswidth);
+			console.log(canvasheight);
+			socket.emit('WindowDetails', {widthy: Number(canvaswidth), heighty:Number(canvasheight)});
+			cursorLayer = document.getElementById("CursorLayer");
+			var ctx = canvas.getContext("2d");
+			ctx.fillStyle = "#7cfc00";
+			// Code to populate canvas
+			for (var y = 0 ; y < canvas.height ; y++)
+			{
+				for (var x = 0 ; x < canvas.width ; x++)
+				{
+					ctx.fillRect(x, y, 1, 1);
+				}
+			}
+			for (var i = 0 ; i < data.list.length ; i++)
+			{
+				if (data.list[i].x >= data.actualX && data.list[i].x <= (data.actualX+canvaswidth) && (data.list[i].y >= data.actualY && data.list[i].y <= (data.actualY-canvasheight)))
+				{
+					ctx.fillStyle = data.list[i].color ;
+					ctx.fillRect(data.actualX-data.list[i].x, data.actualY-data.list[i].y, data.list[i].l, data.list[i].b);
+					console.log("Got inside");
+				}				
+			}
+								
+			ctx.fillStyle = "#000000";
+			ctx.fillRect((canvas.width-playerSquareSize)/2, (canvas.height-playerSquareSize)/2, playerSquareSize, playerSquareSize);
+			
+			document.onkeydown = function(evt) {
+		    	evt = evt || window.event;
+		    	if (evt.keyCode == 87 || evt.keyCode == 197 || evt.keyCode == 65 || evt.keyCode == 97 || evt.keyCode == 83 || evt.keyCode == 115 || evt.keyCode == 68 || evt.keyCode == 100) {
+					socket.emit("ChangeCamera", {keycode : evt.keyCode});
+					console.log("SHIT");
+    			}
+			};
 		});
 		// socket.on('news', function (data) {
 		// 	console.log(data);

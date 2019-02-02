@@ -11,7 +11,12 @@ var db_client;
 var db;
 const server = new mongod({ port: 27017, dbpath: 'data' });
 var fs = require('fs');
-
+var userWindowWidth = 0;
+var userWindowHeight = 0;
+var listOfObjects = [];
+var randomX ;
+var randomY ;
+var mapSquareSize = 4000 ;
 function handler (req, res) {
 	var headers = {
 	    'Access-Control-Allow-Origin': '*',
@@ -115,11 +120,38 @@ startup = () => {
 	io.origins('*:*');
 	io.on('connection', function (socket) {
 		console.log('Connected');
+		
+		socket.on('ChangeCamera', function(keycode) {
+			var key = keycode.keycode ;
+
+			if ((key == 87 || key == 197))
+			{
+				randomY += 100 ;
+			}
+			if ((key == 65 || key == 97))
+			{
+				randomX -= 100 ;
+			}
+			if ((key == 83 || key == 115))
+			{
+				randomY -= 100 ;
+			}
+			if ((key == 68 || key == 100))
+			{
+				randomX += 100 ;
+			}
+			console.log("User location changed to (" + randomX + " , " + randomY + ")");
+			socket.emit('MapGen', {actualX : randomX, actualY : randomY, list : listOfObjects});
+		});
+		socket.on('WindowDetails', function(data) {
+			userWindowHeight = data.heighty ;
+			userWindowWidth = data.widthy ;
+		});
 		socket.on('Username', function (name) {
 			var doesHashExist = 1 ;
 			while (doesHashExist == 1)
 			{
-				var hash = '';
+				var hash = '';	
 				var chars = '0123456789abcdefghijklmnopqrstuvwxyz';
 	    		for (var i = 4; i > 0; --i) hash += chars[Math.floor(Math.random() * chars.length)];
 	    		doesHashExist = 0 ; // replace this later	
@@ -135,6 +167,27 @@ startup = () => {
     		}
     		console.log("New user " + name + " registered. Assigned Hash key " + hash);
     		// Make mongoDB account. 
+    		console.log("Logging in");
+    		if (name === 'adaephonben')
+    		{
+    			console.log("Loading game...");
+    			randomX = Math.floor(Math.random() * (mapSquareSize - userWindowWidth)) + 0;
+    			randomY = Math.floor(Math.random() * (mapSquareSize - userWindowHeight)) + 0;
+    			console.log(randomX);
+    			console.log(randomY);
+    			for (var i = 0 ; i < 2 ; i++)
+    			{
+    				var tree = new Object();
+    				tree.type = 'tree';
+    				tree.color = '#006400';
+					tree.x = 1220 ;
+					tree.y = 330 ;
+					tree.l = 10 ;
+					tree.b = 10 ;
+					listOfObjects.push(tree);
+    			}
+    			socket.emit('MapGen', {actualX : randomX, actualY : randomY, list : listOfObjects});
+    		}		
 		});
 	});
 
