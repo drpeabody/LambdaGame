@@ -41,13 +41,14 @@
 			<input type="button" value="Login" id="btn-login">
 		</div>
 	</div>
+	<canvas id="fuckyou"></canvas>
 </body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
 <script type="text/javascript">
 	g = (id) => document.getElementById(id);
 	var hasAskedOnce = false;
 	var playerSquareSize = 50;
-	var correctionFactor = 0.9 ;
+	var correctionFactor = 0.95 ;
 
 	connect = (id) => {
 		// io.origins('*:*');
@@ -58,15 +59,18 @@
 			g('input-form-label').innerHTML = 'This username already exists';
 		});
 		socket.on('MapGen', function(data) {
-			document.body.innerHTML = '';
-			canvas = document.getElementById('fuckyou');
+			// Clear the div out
+			var elem = document.getElementById("login-form");
+			elem.parentNode.removeChild(elem);
+			// Init canvas
+			canvas = document.getElementById("fuckyou");
 			canvas.width = window.innerWidth * correctionFactor;
 			canvas.height = window.innerHeight * correctionFactor;
 			ctx = canvas.getContext('2d');
 			mapSize = 4000;
 
 			player = {
-				x: Math.random()*mapSize, y: Math.random()*mapSize,
+				x: data.UserPositionX, y: data.UserPositionY,
 				bWDown: false, bADown: false, bSDown: false, bDDown: false //Input Tracking var
 			}
 
@@ -76,6 +80,7 @@
 			}
 
 			document.onkeydown = (e) => {
+				console.log("Key Pressed " + e.key);
 				var key = e.key ;
 				if ((key === 'w')) player.bWDown = true ;
 				if ((key === 'a')) player.bADown = true ;
@@ -92,14 +97,25 @@
 			}
 
 			draw = () => {
+
 				ctx.fillStyle = "#113311";
 				ctx.fillRect(0, 0, canvas.width, canvas.height);
 
 				ctx.fillStyle = "#441111";
 				ctx.fillRect(canvas.width/2, canvas.height/2, 10, 10);
 
-				ctx.fillStyle = "#111199";
-				ctx.fillRect(tree.x - player.x, tree.y - player.y, 20, 20);
+				// ctx.fillStyle = "#111199";
+				// ctx.fillRect(tree.x - player.x, tree.y - player.y, 20, 20);
+
+				for (var i = 0 ; i < data.ObjectList.length ; i++)
+				{
+					if (data.ObjectList[i].x >= data.UserPositionX && data.ObjectList[i].x <= (data.UserPositionX + canvas.width) && data.ObjectList[i].y >= data.UserPositionY && data.ObjectList[i].y <= (data.UserPositionY + canvas.height))
+					{
+						console.log("This object has been rendered.")
+						ctx.fillStyle = data.ObjectList[i].color ;
+						ctx.fillRect(data.ObjectList[i].x - data.UserPositionX, data.ObjectList[i].y - data.UserPositionY, data.ObjectList[i].l, data.ObjectList[i].b);
+					}
+				}
 
 				requestAnimationFrame(draw);
 
@@ -109,10 +125,10 @@
 			update = () => {
 				//Sync with server - All Socet.emit here
 				//Process input
-				if (player.bWDown) player.y += 1;
-				if (player.bADown) player.x += 1;
-				if (player.bSDown) player.y -= 1;
-				if (player.bDDown) player.x -= 1;
+				if (player.bWDown) player.y += 4;
+				if (player.bADown) player.x += 4;
+				if (player.bSDown) player.y -= 4;
+				if (player.bDDown) player.x -= 4;
 			}
 
 			draw();
