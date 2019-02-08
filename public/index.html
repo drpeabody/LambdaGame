@@ -47,58 +47,75 @@
 	g = (id) => document.getElementById(id);
 	var hasAskedOnce = false;
 	var playerSquareSize = 50;
-
+	var correctionFactor = 0.9 ;
 
 	connect = (id) => {
 		// io.origins('*:*');
 		// socket = io('http://192.168.0.130:8080/', {id: id});
 		socket = io('http://localhost:8080/', {id: id});
-		socket.emit('Username', id);
+		socket.emit('Username', {id: id, windowWidth : (window.innerWidth * correctionFactor), windowHeight : (window.innerHeight*correctionFactor)});
 		socket.on('AccountExists', function(doesAccountExist) {
 			g('input-form-label').innerHTML = 'This username already exists';
 		});
-		
 		socket.on('MapGen', function(data) {
 			document.body.innerHTML = '';
-			var canvas = document.createElement('canvas');
-			// Get the canvas element form the page
-			canvas.id = "CursorLayer";
-			canvas.width = window.innerWidth;
-			canvas.height = window.innerHeight;
-			var canvaswidth = canvas.width;
-			var canvasheight = canvas.height;
-			canvas.style.position = "absolute";
-			var body = document.getElementsByTagName("body")[0];
-			body.appendChild(canvas);
-			console.log(canvaswidth);
-			console.log(canvasheight);
-			socket.emit('WindowDetails', {widthy: Number(canvaswidth), heighty:Number(canvasheight)});
-			// cursorLayer = document.getElementById("CursorLayer");
-			var ctx = canvas.getContext("2d");
-			
-			ctx.fillStyle = "#7cfc00";
-			ctx.fillRect(0, 0, canvas.width, canvas.height);
+			canvas = document.getElementById('fuckyou');
+			canvas.width = window.innerWidth * correctionFactor;
+			canvas.height = window.innerHeight * correctionFactor;
+			ctx = canvas.getContext('2d');
+			mapSize = 4000;
 
-			for (var i = 0 ; i < data.list.length ; i++)
-			{
-				if (data.list[i].x >= data.actualX && data.list[i].x <= (data.actualX+canvaswidth) && (data.list[i].y >= data.actualY && data.list[i].y <= (data.actualY-canvasheight)))
-				{
-					ctx.fillStyle = data.list[i].color ;
-					ctx.fillRect(data.actualX-data.list[i].x, data.actualY-data.list[i].y, data.list[i].l, data.list[i].b);
-					console.log("Got inside");
-				}				
+			player = {
+				x: Math.random()*mapSize, y: Math.random()*mapSize,
+				bWDown: false, bADown: false, bSDown: false, bDDown: false //Input Tracking var
 			}
-								
-			ctx.fillStyle = "#000000";
-			ctx.fillRect((canvas.width-playerSquareSize)/2, (canvas.height-playerSquareSize)/2, playerSquareSize, playerSquareSize);
-			
-			document.onkeydown = function(evt) {
-		    	evt = evt || window.event;
-		    	if (evt.keyCode == 87 || evt.keyCode == 197 || evt.keyCode == 65 || evt.keyCode == 97 || evt.keyCode == 83 || evt.keyCode == 115 || evt.keyCode == 68 || evt.keyCode == 100) {
-					socket.emit("ChangeCamera", {keycode : evt.keyCode});
-					console.log("SHIT");
-    			}
-			};
+
+			tree = {
+				// x: Math.random()*mapSize, y: Math.random()*mapSize
+				x: player.x + 30, y: player.y + 30
+			}
+
+			document.onkeydown = (e) => {
+				var key = e.key ;
+				if ((key === 'w')) player.bWDown = true ;
+				if ((key === 'a')) player.bADown = true ;
+				if ((key === 's')) player.bSDown = true ;
+				if ((key === 'd')) player.bDDown = true ;
+			}
+
+			document.onkeyup = (e) => {
+				var key = e.key ;
+				if ((key === 'w')) player.bWDown = false ;
+				if ((key === 'a')) player.bADown = false ;
+				if ((key === 's')) player.bSDown = false ;
+				if ((key === 'd')) player.bDDown = false ;
+			}
+
+			draw = () => {
+				ctx.fillStyle = "#113311";
+				ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+				ctx.fillStyle = "#441111";
+				ctx.fillRect(canvas.width/2, canvas.height/2, 10, 10);
+
+				ctx.fillStyle = "#111199";
+				ctx.fillRect(tree.x - player.x, tree.y - player.y, 20, 20);
+
+				requestAnimationFrame(draw);
+
+				update();
+			}
+
+			update = () => {
+				//Sync with server - All Socet.emit here
+				//Process input
+				if (player.bWDown) player.y += 1;
+				if (player.bADown) player.x += 1;
+				if (player.bSDown) player.y -= 1;
+				if (player.bDDown) player.x -= 1;
+			}
+
+			draw();
 		});
 		// socket.on('news', function (data) {
 		// 	console.log(data);
