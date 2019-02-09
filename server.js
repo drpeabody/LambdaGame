@@ -173,14 +173,17 @@ startup = () => {
     		console.log("UserPositionX = " + userPositionsX[curId]);
     		console.log("UserPositionY = " + userPositionsY[curId]);
 
-    		// Let's create a tree object
-    		var tree = new Object();
-    		tree.x = 69 ;
-    		tree.y = 69 ;
-    		tree.l = 10 ;
-    		tree.b = 20 ;
-    		tree.color = "#111199";
-    		listOfObjects.push(tree);
+    		// Let's create tree objects
+    		for (var i = 1 ; i <= 1000 ; i++)
+    		{
+    			var tree = new Object();
+    			tree.x = Math.floor(Math.random() * (mapSquareSize)) + 0 ;
+    			tree.y = Math.floor(Math.random() * (mapSquareSize)) + 0 ;
+    			tree.l = 10 ;
+    			tree.b = 20 ;
+    			tree.color = "#111199";
+    			listOfObjects.push(tree);
+    		}
     		// Initialize all objects on Map like this and pass it to MapGen
 
     		socket.emit('MapGen', {ObjectList : listOfObjects,  UserPositionX : userPositionsX[curId], UserPositionY : userPositionsY[curId], curId : curId});

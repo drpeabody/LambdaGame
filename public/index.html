@@ -128,10 +128,10 @@
 
 				var speed = 1 ;
 
-				if (player.bWDown) {player.y += speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
-				if (player.bADown) {player.x += speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
-				if (player.bSDown) {player.y -= speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
-				if (player.bDDown) {player.x -= speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
+				if (player.bWDown) {player.y -= speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
+				if (player.bADown) {player.x -= speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
+				if (player.bSDown) {player.y += speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
+				if (player.bDDown) {player.x += speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
 				
 			}
 
