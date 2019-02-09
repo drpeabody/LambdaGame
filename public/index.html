@@ -4,15 +4,18 @@
 	<meta charset="utf-8">
 	<title>The Lambda Game</title>
 	<style type="text/css">
+		h1 {
+			color: 	#fff;
+		}	
 		body {
-			background: #112;
+			background: linear-gradient(#224, #112);
 		}
 		canvas {
 			border : 0px;
 		}
 		#login-form {
 			color: #fff;
-			margin-top: 40vh;
+			margin-top: 20vh;
 			text-align: center;
 		}
 		.row {
@@ -24,21 +27,38 @@
 			font-size: 2em;
 			margin-bottom: 5vh;
 		}
+		.btn {
+			margin: 1%; 
+			padding: 1%;
+			display: inline-flex;
+			background: #484;
+			align-content: center;
+			border: none;
+			border-radius: 1vw;
+			cursor: pointer;
+			-webkit-touch-callout: none; /* iOS Safari */
+			-webkit-user-select: none; /* Safari */
+			-khtml-user-select: none; /* Konqueror HTML */
+			-moz-user-select: none; /* Firefox */
+			-ms-user-select: none; /* Internet Explorer/Edge */
+			user-select: none; /* Non-prefixed version, currently
+			                  supported by Chrome and Opera */
+		}
 	</style>
 </head>
 <body>
 	<div id="login-form">
-		<label id="input-form-label" class="label">Enter your username if you are logging in for the First Time, or your Hash Key if you already have an account. </label>
+		<h1> Welcome to the Lambda Game. </h1>
+		<label id="input-form-label" class="label">  You must Register or Login to continue. </label>
 		<div class="row">
 			Username: <input type="text" name="UserName" id="username">
 		</div>
-
 		<div class="row">
-			Key : <input type="Password" name="Password" id="password">
+			Password: <input type="Password" name="Password" id="password">
 		</div>
 		<div class="row">
-			<input type="button" value="Register" id="btn-register">
-			<input type="button" value="Login" id="btn-login">
+			<div class="btn" value="Register" id="btn-register"> Register  </div>
+			<div class="btn" value="Login" id="btn-login"> Login  </div>
 		</div>
 	</div>
 	<canvas id="fuckyou"></canvas>
@@ -46,10 +66,24 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
 <script type="text/javascript">
 	g = (id) => document.getElementById(id);
-	var hasAskedOnce = false;
+	request = (method, url, data, callback) => {
+		var httpRequest = new XMLHttpRequest();
+		
+		if(!httpRequest) {
+			alert('Please use a web browser of this age.');
+			return false;
+		}
+
+		httpRequest.onreadystatechange = callback;
+		httpRequest.open(method, url);
+    	httpRequest.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+		httpRequest.send(JSON.stringify(data));
+		return httpRequest;
+	}
+	url = 'http://localhost:8080';
+
 	var playerSquareSize = 50;
-	var correctionFactor = 0.95 ;
-	// clientMap
+	var correctionFactor = 0.95;
 
 	connect = (id) => {
 		// io.origins('*:*');
@@ -150,39 +184,50 @@
 		// 	socket.emit('my other event', { my: 'data' });
 		// });
 	}
-	// connectPwd = (pwd) => {
-	// 	// io.origins('*:*');
-	// 	// socket = io('http://192.168.110.68:8080/', {id: id, pwd: pwd});
-	// 	socket = io('http://localhost:8080/', {pwd: pwd});
-	// 	socket.on('news', function (data) {
-	// 		console.log(data);
-	// 		socket.emit('my other event', { my: 'data' });
-	// 	});
-	// }
 
 	g('btn-register').addEventListener('click', () => {
 		var name = g('username').value;
-		if(!name|| name === ''){
+		var pwd = g('password').value;
+
+		if(!name || name === ''){
 			g('input-form-label').innerHTML = 'Please Enter a valid Username';
 			return;
 		}
-		if(hasAskedOnce){
-			g('input-form-label').innerHTML = 'Please wait while we register you with our servers.';
-			connect(name);
-		} else {
-			g('input-form-label').innerHTML = 'Please Reconfirm Your Password (without your '+
-			'password you will lose access to your inventory) and click Register again.';
-			hasAskedOnce = true;
+		if(!pwd || pwd === '' || pwd.length < 8){
+			g('input-form-label').innerHTML = 'Please Enter a valid Password of at least 8 characters.';
+			return;
 		}
+
+		var req = request('POST', url + '/register', { username: name, pwd: pwd }, (val) => {
+			if(!req || req.readyState !== 4) return;
+			if(req.responseText === 'Registered'){
+				//Successfully Registered, Login
+				g('btn-login').click();
+			}
+			else {
+				g('input-form-label').innerHTML = req.responseText;
+			}
+		});
+
 	});
 
 	g('btn-login').addEventListener('click', () => {
-		// var pass = g('password').value ;
-		// if (!pass || pass === '')
-		// {
-		// 	g('input-form-label').innerHTML = 'Please enter a valid password';
-		// 	return ;
-		// }
+		var name = g('username').value;
+		var pwd = g('password').value;
+
+		if(!name || name === ''){
+			g('input-form-label').innerHTML = 'Please Enter a valid Username';
+			return;
+		}
+		if(!pwd || pwd === '' || pwd.length < 8){
+			g('input-form-label').innerHTML = 'Please Enter a valid Password of at least 8 characters.';
+			return;
+		}
+
+		var req = request('POST', url + '/login', { username: name, pwd: pwd }, (val) => {
+			if(!req || req.readyState !== 4) return;
+			console.log(req.responseText);
+		});
 
 	});
 </script>

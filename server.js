@@ -34,19 +34,59 @@ function handler (req, res) {
 	    'Access-Control-Allow-Origin': '*',
 	    'Access-Control-Allow-Methods': 'OPTIONS, POST, GET',
 	    'Access-Control-Max-Age': 2592000, // 30 days
-	    // 'Content-Type': 'contentType'
+	    // 'Content-Type': 'application/x-www-form-urlencoded'
 	};
 
-	res.writeHead(200, headers);
-	if(req.url === '/')
-		fs.readFile('public/index.html', function (err, data) {
-		    if (err) {
-		      res.writeHead(500);
-		      return res.end('Error loading index.html');
-		    }
+	let data = undefined;
+	req.on('data', chunk => {
+		try {
+			data = JSON.parse(chunk);
+		} catch (err) {
+			data = chunk.toString();
+		}
+	});
 
-		    res.end(data);
-		});
+	req.on('end', () => {
+		res.writeHead(200, headers);
+		if(req.url === '/'){
+			fs.readFile('public/index.html', function (err, data) {
+			    if (err) {
+			      res.writeHead(500);
+			      return res.end('Error loading index.html');
+			    }
+
+			    res.end(data);
+			});
+		}
+		else if(req.url === '/register'){
+			var username = data.username, pwd = data.pwd;
+			res.writeHead(200, {"Content-Type": "application/json"});
+			
+			mongoFind('users', { username: username }, (docs) => {
+				if(docs.length > 0){
+					res.end('Username Already Exists');
+				}
+				else {
+					mongoInsertOne('users', data);
+					res.end('Registered');
+				}			
+			});
+		}
+		else if(req.url === '/login'){
+			// var username = data.username, pwd = data.pwd;
+			res.writeHead(200, {"Content-Type": "application/json"});
+
+			mongoFind('users', data, (docs) => {
+				if(docs.length < 1){
+					res.end('Username or Password Incorrect.');
+				} else {
+					//Generate User session hash and return for user login auth to work
+					res.end('Success');
+				}
+			});
+		}
+	});
+
 
 }
 
@@ -129,7 +169,7 @@ startup = () => {
 
 	app.listen(8080);
 
-	io.origins('*:*');
+	// io.origins('*:*');
 	io.on('connection', function (socket) {
 		console.log('Connected');
 		socket.on('UpdateCoords', function(player) {
