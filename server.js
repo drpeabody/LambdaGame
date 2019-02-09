@@ -187,6 +187,7 @@ startup = () => {
     		// Initialize all objects on Map like this and pass it to MapGen
 
     		socket.emit('MapGen', {ObjectList : listOfObjects,  UserPositionX : userPositionsX[curId], UserPositionY : userPositionsY[curId], curId : curId});
+    		
 		});
 	});
 

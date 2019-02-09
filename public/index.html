@@ -127,12 +127,15 @@
 				//Process input
 
 				var speed = 1 ;
-
-				if (player.bWDown) {player.y -= speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
-				if (player.bADown) {player.x -= speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
-				if (player.bSDown) {player.y += speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
-				if (player.bDDown) {player.x += speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
-				
+				// Temporary Fix : 
+				if (Math.abs(player.x - data.UserPositionX) <= 100 && Math.abs(player.y - data.UserPositionY) <= 100)
+				{
+					if (player.bWDown) {player.y -= speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
+					if (player.bADown) {player.x -= speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
+					if (player.bSDown) {player.y += speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
+					if (player.bDDown) {player.x += speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
+				}
+				// Figure out some way of verification server-side
 			}
 
 			draw();
