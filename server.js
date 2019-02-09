@@ -125,7 +125,17 @@ startup = () => {
 	io.origins('*:*');
 	io.on('connection', function (socket) {
 		console.log('Connected');
-		
+		socket.on('UpdateCoords', function(player) {
+
+			var ID = player.ID ;
+
+			userPositionsX[ID] = player.x;
+			userPositionsY[ID] = player.y;
+
+			console.log("Changed Position of User #" + (ID+1) + " to (" + userPositionsX[ID] + "," + userPositionsY[ID] + ").");
+
+
+		});
 		socket.on('Username', function (data) {
 			var doesHashExist = 1 ;
 			while (doesHashExist == 1)
@@ -173,7 +183,7 @@ startup = () => {
     		listOfObjects.push(tree);
     		// Initialize all objects on Map like this and pass it to MapGen
 
-    		socket.emit('MapGen', {ObjectList : listOfObjects,  UserPositionX : userPositionsX[curId], UserPositionY : userPositionsY[curId]});
+    		socket.emit('MapGen', {ObjectList : listOfObjects,  UserPositionX : userPositionsX[curId], UserPositionY : userPositionsY[curId], curId : curId});
 		});
 	});
 

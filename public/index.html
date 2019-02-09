@@ -74,13 +74,13 @@
 				bWDown: false, bADown: false, bSDown: false, bDDown: false //Input Tracking var
 			}
 
-			tree = {
-				// x: Math.random()*mapSize, y: Math.random()*mapSize
-				x: player.x + 30, y: player.y + 30
-			}
+			// tree = {
+			// 	// x: Math.random()*mapSize, y: Math.random()*mapSize
+			// 	x: player.x + 30, y: player.y + 30
+			// }
 
 			document.onkeydown = (e) => {
-				console.log("Key Pressed " + e.key);
+				// console.log("Key Pressed " + e.key);
 				var key = e.key ;
 				if ((key === 'w')) player.bWDown = true ;
 				if ((key === 'a')) player.bADown = true ;
@@ -109,6 +109,10 @@
 
 				for (var i = 0 ; i < data.ObjectList.length ; i++)
 				{
+					//Debugging - remove later
+					console.log(data.ObjectList[i].x + " X " + data.UserPositionX);
+					console.log(data.ObjectList[i].y + " Y " + data.UserPositionY);
+					//
 					if (data.ObjectList[i].x >= data.UserPositionX && data.ObjectList[i].x <= (data.UserPositionX + canvas.width) && data.ObjectList[i].y >= data.UserPositionY && data.ObjectList[i].y <= (data.UserPositionY + canvas.height))
 					{
 						console.log("This object has been rendered.")
@@ -125,10 +129,15 @@
 			update = () => {
 				//Sync with server - All Socet.emit here
 				//Process input
-				if (player.bWDown) player.y += 4;
-				if (player.bADown) player.x += 4;
-				if (player.bSDown) player.y -= 4;
-				if (player.bDDown) player.x -= 4;
+
+				var speed = 10 ;
+
+				if (player.bWDown) {player.y += speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
+				if (player.bADown) {player.x += speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
+				if (player.bSDown) {player.y -= speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
+				if (player.bDDown) {player.x -= speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
+
+				
 			}
 
 			draw();
