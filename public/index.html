@@ -49,6 +49,7 @@
 	var hasAskedOnce = false;
 	var playerSquareSize = 50;
 	var correctionFactor = 0.95 ;
+	// clientMap
 
 	connect = (id) => {
 		// io.origins('*:*');
@@ -138,9 +139,11 @@
 					if (player.bDDown) {player.x += speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
 				}
 				// Figure out some way of verification server-side
+				//socket.emit('requestMap', x, y, width,height)
 			}
-
 			draw();
+
+			// draw();
 		});
 		// socket.on('news', function (data) {
 		// 	console.log(data);
