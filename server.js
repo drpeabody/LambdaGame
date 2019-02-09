@@ -11,12 +11,17 @@ var db_client;
 var db;
 const server = new mongod({ port: 27017, dbpath: 'data' });
 var fs = require('fs');
-var userWindowWidth = 0;
-var userWindowHeight = 0;
+
 var listOfObjects = [];
-var randomX ;
-var randomY ;
-var mapSquareSize = 4000 ;
+
+var userNames=[];
+var userHashes=[];
+var userPositionsX = [];
+var userPositionsY = [];
+var userWindowHeight = [];
+var userWindowWidth = [];
+
+var mapSquareSize = 100000 ;
 function handler (req, res) {
 	var headers = {
 	    'Access-Control-Allow-Origin': '*',
@@ -120,34 +125,18 @@ startup = () => {
 	io.origins('*:*');
 	io.on('connection', function (socket) {
 		console.log('Connected');
-		
-		socket.on('ChangeCamera', function(keycode) {
-			var key = keycode.keycode ;
+		socket.on('UpdateCoords', function(player) {
 
-			if ((key == 87 || key == 197))
-			{
-				randomY += 100 ;
-			}
-			if ((key == 65 || key == 97))
-			{
-				randomX -= 100 ;
-			}
-			if ((key == 83 || key == 115))
-			{
-				randomY -= 100 ;
-			}
-			if ((key == 68 || key == 100))
-			{
-				randomX += 100 ;
-			}
-			console.log("User location changed to (" + randomX + " , " + randomY + ")");
-			socket.emit('MapGen', {actualX : randomX, actualY : randomY, list : listOfObjects});
+			var ID = player.ID ;
+
+			userPositionsX[ID] = player.x;
+			userPositionsY[ID] = player.y;
+
+			console.log("Changed Position of User #" + (ID+1) + " to (" + userPositionsX[ID] + "," + userPositionsY[ID] + ").");
+
+
 		});
-		socket.on('WindowDetails', function(data) {
-			userWindowHeight = data.heighty ;
-			userWindowWidth = data.widthy ;
-		});
-		socket.on('Username', function (name) {
+		socket.on('Username', function (data) {
 			var doesHashExist = 1 ;
 			while (doesHashExist == 1)
 			{
@@ -165,29 +154,40 @@ startup = () => {
     			socket.emit('AccountExists', doesAccountExist);
     			return ;
     		}
-    		console.log("New user " + name + " registered. Assigned Hash key " + hash);
+    		console.log("New user " + data.id + " registered. Assigned Hash key " + hash);
     		// Make mongoDB account. 
     		console.log("Logging in");
-    		if (name === 'adaephonben')
+
+    		var curId = userNames.push(data.id) - 1;
+    		console.log(curId);
+    		userHashes.push(hash);
+    		userWindowWidth.push(data.windowWidth);
+    		userWindowHeight.push(data.windowHeight);
+    		userPositionsX.push(Math.floor(Math.random() * (mapSquareSize - userWindowWidth[curId])) + 0);
+    		userPositionsY.push(Math.floor(Math.random() * (mapSquareSize - userWindowHeight[curId])) + 0);
+    		console.log("### CURRENT USER DETAILS : USER #" + (curId+1) + " ###");
+    		console.log("Username = " + userNames[curId]);
+    		console.log("Hash = " + userHashes[curId]);	
+    		console.log("UserWindowWidth = " + userWindowWidth[curId]);	
+    		console.log("UserWindowHeight = " + userWindowHeight[curId]);	
+    		console.log("UserPositionX = " + userPositionsX[curId]);
+    		console.log("UserPositionY = " + userPositionsY[curId]);
+
+    		// Let's create tree objects
+    		for (var i = 1 ; i <= 100000 ; i++)
     		{
-    			console.log("Loading game...");
-    			randomX = Math.floor(Math.random() * (mapSquareSize - userWindowWidth)) + 0;
-    			randomY = Math.floor(Math.random() * (mapSquareSize - userWindowHeight)) + 0;
-    			console.log(randomX);
-    			console.log(randomY);
-    			for (var i = 0 ; i < 2 ; i++)
-    			{
-    				var tree = new Object();
-    				tree.type = 'tree';
-    				tree.color = '#006400';
-					tree.x = 1220 ;
-					tree.y = 330 ;
-					tree.l = 10 ;
-					tree.b = 10 ;
-					listOfObjects.push(tree);
-    			}
-    			socket.emit('MapGen', {actualX : randomX, actualY : randomY, list : listOfObjects});
-    		}		
+    			var tree = new Object();
+    			tree.x = Math.floor(Math.random() * (mapSquareSize)) + 0 ;
+    			tree.y = Math.floor(Math.random() * (mapSquareSize)) + 0 ;
+    			tree.l = 10 ;
+    			tree.b = 20 ;
+    			tree.color = "#111199";
+    			listOfObjects.push(tree);
+    		}
+    		// Initialize all objects on Map like this and pass it to MapGen
+
+    		socket.emit('MapGen', {ObjectList : listOfObjects,  UserPositionX : userPositionsX[curId], UserPositionY : userPositionsY[curId], curId : curId});
+
 		});
 	});
 
