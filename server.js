@@ -19,7 +19,14 @@ var userHashes=[];
 var userPositionsX = [];
 var userPositionsY = [];
 var userWindowHeight = [];
-var userWindowWidth = [];
+var userWindowWidth = []; //Get rid of this
+
+var ClientSchema = {
+	socket: socket,
+	userName: 'ewd',
+	position: { x: x, y: y },
+	hash: 'q3r234r23'
+}
 
 var mapSquareSize = 100000 ;
 function handler (req, res) {
