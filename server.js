@@ -184,6 +184,16 @@ startup = () => {
     			tree.color = "#111199";
     			listOfObjects.push(tree);
     		}
+    		for (var i = 1 ; i <= 100000 ; i++)
+    		{
+    			var rock = new Object();
+    			rock.x = Math.floor(Math.random() * (mapSquareSize)) + 0 ;
+    			rock.y = Math.floor(Math.random() * (mapSquareSize)) + 0 ;
+    			rock.l = 10 ;
+    			rock.b = 10 ;
+    			rock.color = "#000000";
+    			listOfObjects.push(rock);
+    		}
     		// Initialize all objects on Map like this and pass it to MapGen
 
     		socket.emit('MapGen', {ObjectList : listOfObjects,  UserPositionX : userPositionsX[curId], UserPositionY : userPositionsY[curId], curId : curId});
