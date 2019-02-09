@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Game</title>
+	<meta charset="utf-8">
+</head>
+<body>
+	<canvas id="canvas"></canvas>
+</body>
+<script type="text/javascript">
+	canvas = document.getElementById('canvas');
+	canvas.width = Math.floor(window.innerWidth * 0.9);
+	canvas.height = Math.floor(window.innerHeight * 0.9);
+	ctx = canvas.getContext('2d');
+
+	draw = () => {
+		ctx.fillStyle = "#111";
+		ctx.fillRect(0, 0, canvas.width, canvas.height);
+		requestAnimationFrame(draw);
+	}
+
+	draw();
+
+</script>
+</html>
