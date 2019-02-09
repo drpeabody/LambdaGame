@@ -177,8 +177,8 @@ startup = () => {
     		var tree = new Object();
     		tree.x = 69 ;
     		tree.y = 69 ;
-    		tree.l = 20 ;
-    		tree.b = 10 ;
+    		tree.l = 10 ;
+    		tree.b = 20 ;
     		tree.color = "#111199";
     		listOfObjects.push(tree);
     		// Initialize all objects on Map like this and pass it to MapGen

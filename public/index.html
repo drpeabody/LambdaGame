@@ -109,15 +109,11 @@
 
 				for (var i = 0 ; i < data.ObjectList.length ; i++)
 				{
-					//Debugging - remove later
-					console.log(data.ObjectList[i].x + " X " + data.UserPositionX);
-					console.log(data.ObjectList[i].y + " Y " + data.UserPositionY);
-					//
-					if (data.ObjectList[i].x >= data.UserPositionX && data.ObjectList[i].x <= (data.UserPositionX + canvas.width) && data.ObjectList[i].y >= data.UserPositionY && data.ObjectList[i].y <= (data.UserPositionY + canvas.height))
+					if (data.ObjectList[i].x >= player.x && data.ObjectList[i].x <= (player.x + canvas.width) && data.ObjectList[i].y >= player.y && data.ObjectList[i].y <= (player.y + canvas.height))
 					{
 						console.log("This object has been rendered.")
 						ctx.fillStyle = data.ObjectList[i].color ;
-						ctx.fillRect(data.ObjectList[i].x - data.UserPositionX, data.ObjectList[i].y - data.UserPositionY, data.ObjectList[i].l, data.ObjectList[i].b);
+						ctx.fillRect(data.ObjectList[i].x - player.x, data.ObjectList[i].y - player.y, data.ObjectList[i].l, data.ObjectList[i].b);
 					}
 				}
 
@@ -130,13 +126,12 @@
 				//Sync with server - All Socet.emit here
 				//Process input
 
-				var speed = 10 ;
+				var speed = 1 ;
 
 				if (player.bWDown) {player.y += speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
 				if (player.bADown) {player.x += speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
 				if (player.bSDown) {player.y -= speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
 				if (player.bDDown) {player.x -= speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
-
 				
 			}
 
