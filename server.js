@@ -21,7 +21,7 @@ var userPositionsY = [];
 var userWindowHeight = [];
 var userWindowWidth = [];
 
-var mapSquareSize = 4000 ;
+var mapSquareSize = 100000 ;
 function handler (req, res) {
 	var headers = {
 	    'Access-Control-Allow-Origin': '*',
@@ -174,7 +174,7 @@ startup = () => {
     		console.log("UserPositionY = " + userPositionsY[curId]);
 
     		// Let's create tree objects
-    		for (var i = 1 ; i <= 1000 ; i++)
+    		for (var i = 1 ; i <= 100000 ; i++)
     		{
     			var tree = new Object();
     			tree.x = Math.floor(Math.random() * (mapSquareSize)) + 0 ;
@@ -187,7 +187,7 @@ startup = () => {
     		// Initialize all objects on Map like this and pass it to MapGen
 
     		socket.emit('MapGen', {ObjectList : listOfObjects,  UserPositionX : userPositionsX[curId], UserPositionY : userPositionsY[curId], curId : curId});
-    		
+
 		});
 	});
 

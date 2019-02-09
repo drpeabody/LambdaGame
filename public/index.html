@@ -126,9 +126,11 @@
 				//Sync with server - All Socet.emit here
 				//Process input
 
-				var speed = 1 ;
+				var speed = 5 ;
+				var verificationSquareSize = 300 * speed ;
 				// Temporary Fix : 
-				if (Math.abs(player.x - data.UserPositionX) <= 100 && Math.abs(player.y - data.UserPositionY) <= 100)
+				// if (Math.abs(player.x - data.UserPositionX) <= verificationSquareSize && Math.abs(player.y - data.UserPositionY) <= verificationSquareSize)
+				if (true)
 				{
 					if (player.bWDown) {player.y -= speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
 					if (player.bADown) {player.x -= speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
