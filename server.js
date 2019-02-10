@@ -78,10 +78,19 @@ function handler (req, res) {
 
 			mongoFind('users', data, (docs) => {
 				if(docs.length < 1){
-					res.end('Username or Password Incorrect.');
+					res.end(JSON.stringify({
+						status: false,
+						desc: 'Username or Password Incorrect.',
+					}));
 				} else {
 					//Generate User session hash and return for user login auth to work
-					res.end('Success');
+					var hash = Math.random().toString(36).substring(2) + (new Date()).getTime();
+					console.log('User', data.username, 'logged in with hash:', hash);
+					res.end(JSON.stringify({
+						status: true,
+						desc: 'Logged in Successfully.',
+						token: hash
+					}));
 				}
 			});
 		}

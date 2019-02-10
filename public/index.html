@@ -226,7 +226,9 @@
 
 		var req = request('POST', url + '/login', { username: name, pwd: pwd }, (val) => {
 			if(!req || req.readyState !== 4) return;
-			console.log(req.responseText);
+			var res = JSON.parse(req.responseText);
+			g('input-form-label').innerHTML = res.desc;
+			console.log(res);
 		});
 
 	});
