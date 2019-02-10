@@ -49,7 +49,8 @@
 	var hasAskedOnce = false;
 	var playerSquareSize = 50;
 	var correctionFactor = 0.95 ;
-
+	var playerSquareDimensions = 10 ;
+	var MapSize = 100000 ;
 	connect = (id) => {
 		// io.origins('*:*');
 		// socket = io('http://192.168.0.130:8080/', {id: id});
@@ -97,12 +98,29 @@
 			}
 
 			draw = () => {
-
+				
+				// Figure out better way ?
+				// for (var i = 0 ; i < canvas.width ; i++)
+				// {
+				// 	for (var j = 0 ; j < canvas.height ; j++)
+				// 	{
+				// 		if ((player.x + i) >= 0 && (player.x + i) <= MapSize && (player.y + j) >= 0 && (player.y + j) <= MapSize)
+				// 		{
+				// 			ctx.fillStyle = "#113311";
+				// 			ctx.fillRect(i, j, 1, 1);
+				// 		}
+				// 		else
+				// 		{		
+				// 			ctx.fillStyle = "#000000";	
+				// 			ctx.fillRect(i, j, 1, 1);
+				// 		}
+				// 	}
+				// }
 				ctx.fillStyle = "#113311";
-				ctx.fillRect(0, 0, canvas.width, canvas.height);
+				ctx.fillRect(0,0,canvas.width,canvas.height);
 
 				ctx.fillStyle = "#441111";
-				ctx.fillRect(canvas.width/2, canvas.height/2, 10, 10);
+				ctx.fillRect((canvas.width- playerSquareDimensions )/2, (canvas.height- playerSquareDimensions )/2, playerSquareDimensions, playerSquareDimensions);
 
 				// ctx.fillStyle = "#111199";
 				// ctx.fillRect(tree.x - player.x, tree.y - player.y, 20, 20);
@@ -132,10 +150,10 @@
 				// if (Math.abs(player.x - data.UserPositionX) <= verificationSquareSize && Math.abs(player.y - data.UserPositionY) <= verificationSquareSize)
 				if (true)
 				{
-					if (player.bWDown) {player.y -= speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
-					if (player.bADown) {player.x -= speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
-					if (player.bSDown) {player.y += speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
-					if (player.bDDown) {player.x += speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
+					if (player.bWDown && ((player.y - playerSquareDimensions) >= 0)) {player.y -= speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
+					if (player.bADown && ((player.x - playerSquareDimensions >= 0))) {player.x -= speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
+					if (player.bSDown && (player.y + playerSquareDimensions <= MapSize)) {player.y += speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
+					if (player.bDDown && (player.x + playerSquareDimensions) <= MapSize) {player.x += speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
 				}
 				// Figure out some way of verification server-side
 			}

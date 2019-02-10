@@ -14,12 +14,26 @@ var fs = require('fs');
 
 var listOfObjects = [];
 
-var userNames=[];
-var userHashes=[];
-var userPositionsX = [];
-var userPositionsY = [];
-var userWindowHeight = [];
-var userWindowWidth = [];
+// var userNames=[];
+// var userHashes=[];
+// var userPositionsX = [];
+// var userPositionsY = [];
+// var userWindowHeight = [];
+// var userWindowWidth = [];
+var userArray = [];
+
+var playerSquareDimension = 10 ;
+
+function User(userName, userHash, x, y)
+{
+	this.userName = userName ;
+	this.userHash = userHash ;
+	this.x = x ;
+	this.y = y ;
+	this.l = playerSquareDimension ;
+	this.b = playerSquareDimension ;
+	this.color = "#441111";
+}
 
 var mapSquareSize = 100000 ;
 function handler (req, res) {
@@ -127,12 +141,11 @@ startup = () => {
 		console.log('Connected');
 		socket.on('UpdateCoords', function(player) {
 
-			var ID = player.ID ;
+			var ID = player.ID - 1;
+			userArray[ID].x = player.x;
+			userArray[ID].y = player.y;
 
-			userPositionsX[ID] = player.x;
-			userPositionsY[ID] = player.y;
-
-			console.log("Changed Position of User #" + (ID+1) + " to (" + userPositionsX[ID] + "," + userPositionsY[ID] + ").");
+			console.log("Changed Position of User #" + (ID+1) + " to (" + userArray[ID].x + "," + userArray[ID].y + ").");
 
 
 		});
@@ -158,21 +171,15 @@ startup = () => {
     		// Make mongoDB account. 
     		console.log("Logging in");
 
-    		var curId = userNames.push(data.id) - 1;
-    		console.log(curId);
-    		userHashes.push(hash);
-    		userWindowWidth.push(data.windowWidth);
-    		userWindowHeight.push(data.windowHeight);
-    		userPositionsX.push(Math.floor(Math.random() * (mapSquareSize - userWindowWidth[curId])) + 0);
-    		userPositionsY.push(Math.floor(Math.random() * (mapSquareSize - userWindowHeight[curId])) + 0);
-    		console.log("### CURRENT USER DETAILS : USER #" + (curId+1) + " ###");
-    		console.log("Username = " + userNames[curId]);
-    		console.log("Hash = " + userHashes[curId]);	
-    		console.log("UserWindowWidth = " + userWindowWidth[curId]);	
-    		console.log("UserWindowHeight = " + userWindowHeight[curId]);	
-    		console.log("UserPositionX = " + userPositionsX[curId]);
-    		console.log("UserPositionY = " + userPositionsY[curId]);
+    		var user = new User(data.id, hash, Math.floor(Math.random() * (mapSquareSize)) + 0, Math.floor(Math.random() * (mapSquareSize)) + 0);
+    		var curId = userArray.push(user);
 
+    		console.log("### CURRENT USER DETAILS : USER #" + (curId+1) + " ###");
+    		console.log("Username = " + user.userName);
+    		console.log("Hash = " + user.userHash);	
+    		console.log("UserPositionX = " + user.x);
+    		console.log("UserPositionY = " + user.y);
+    		listOfObjects.push(user);
     		// Let's create tree objects
     		for (var i = 1 ; i <= 100000 ; i++)
     		{
@@ -196,7 +203,7 @@ startup = () => {
     		}
     		// Initialize all objects on Map like this and pass it to MapGen
 
-    		socket.emit('MapGen', {ObjectList : listOfObjects,  UserPositionX : userPositionsX[curId], UserPositionY : userPositionsY[curId], curId : curId});
+    		socket.emit('MapGen', {ObjectList : listOfObjects,  UserPositionX : user.x, UserPositionY : user.y, curId : curId});
 
 		});
 	});
