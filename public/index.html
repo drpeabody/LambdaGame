@@ -68,10 +68,11 @@
 			canvas.width = window.innerWidth * correctionFactor;
 			canvas.height = window.innerHeight * correctionFactor;
 			ctx = canvas.getContext('2d');
-			mapSize = 4000;
 
 			player = {
 				x: data.UserPositionX, y: data.UserPositionY,
+				cameraX: (data.UserPositionX + playerSquareDimensions/2 - canvas.width/2),
+				cameraY: (data.UserPositionY + playerSquareDimensions/2 - canvas.height/2),
 				bWDown: false, bADown: false, bSDown: false, bDDown: false //Input Tracking var
 			}
 
@@ -119,6 +120,26 @@
 				ctx.fillStyle = "#113311";
 				ctx.fillRect(0,0,canvas.width,canvas.height);
 
+				if (player.cameraX < 0 )
+				{
+					ctx.fillStyle = "#000000";
+					ctx.fillRect(0,0,-player.cameraX, canvas.height);
+				}
+				if (player.cameraY < 0 )
+				{
+					ctx.fillStyle = "#000000";
+					ctx.fillRect(0,0,canvas.width, -player.cameraY);
+				}
+				if (player.cameraY + canvas.height >= MapSize)
+				{
+					ctx.fillStyle = "#000000";
+					ctx.fillRect(0,MapSize - player.cameraY,canvas.width, canvas.height- (MapSize - player.cameraY));
+				}
+				if (player.cameraX + canvas.width >= MapSize)
+				{
+					ctx.fillStyle = "#000000";
+					ctx.fillRect(MapSize - player.cameraX, 0, canvas.width - (MapSize - player.cameraX), canvas.height);
+				}
 				ctx.fillStyle = "#441111";
 				ctx.fillRect((canvas.width- playerSquareDimensions )/2, (canvas.height- playerSquareDimensions )/2, playerSquareDimensions, playerSquareDimensions);
 
@@ -127,11 +148,11 @@
 
 				for (var i = 0 ; i < data.ObjectList.length ; i++)
 				{
-					if (data.ObjectList[i].x >= player.x && data.ObjectList[i].x <= (player.x + canvas.width) && data.ObjectList[i].y >= player.y && data.ObjectList[i].y <= (player.y + canvas.height))
+					if (data.ObjectList[i].x >= player.cameraX && data.ObjectList[i].x <= (player.cameraX + canvas.width) && data.ObjectList[i].y >= player.cameraY && data.ObjectList[i].y <= (player.cameraY + canvas.height))
 					{
 						console.log("This object has been rendered.")
 						ctx.fillStyle = data.ObjectList[i].color ;
-						ctx.fillRect(data.ObjectList[i].x - player.x, data.ObjectList[i].y - player.y, data.ObjectList[i].l, data.ObjectList[i].b);
+						ctx.fillRect(data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y - player.cameraY, data.ObjectList[i].l, data.ObjectList[i].b);
 					}
 				}
 
@@ -150,10 +171,10 @@
 				// if (Math.abs(player.x - data.UserPositionX) <= verificationSquareSize && Math.abs(player.y - data.UserPositionY) <= verificationSquareSize)
 				if (true)
 				{
-					if (player.bWDown && ((player.y - playerSquareDimensions) >= 0)) {player.y -= speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
-					if (player.bADown && ((player.x - playerSquareDimensions >= 0))) {player.x -= speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
-					if (player.bSDown && (player.y + playerSquareDimensions <= MapSize)) {player.y += speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
-					if (player.bDDown && (player.x + playerSquareDimensions) <= MapSize) {player.x += speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
+					if (player.bWDown && (player.y - speed>= 0)) {player.y -= speed; player.cameraY -= speed ;socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
+					if (player.bADown && (player.x - speed>= 0)) {player.x -= speed; player.cameraX -= speed ;socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
+					if (player.bSDown && (player.y + playerSquareDimensions + speed <= MapSize)) {player.y += speed; player.cameraY += speed ;socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
+					if (player.bDDown && (player.x + playerSquareDimensions + speed) <= MapSize) {player.x += speed; player.cameraX += speed ;socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
 				}
 				// Figure out some way of verification server-side
 			}
