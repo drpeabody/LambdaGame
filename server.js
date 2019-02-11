@@ -24,19 +24,41 @@ var userArray = [];
 
 var playerSquareDimension = 10 ;
 
+
 function User(userName, userHash, x, y)
 {
-	this.userName = userName ;
-	this.userHash = userHash ;
-	this.x = x ;
-	this.y = y ;
-	this.l = playerSquareDimension ;
-	this.b = playerSquareDimension ;
-
-	this.color = "#441111";
+	return {
+        userName : userName,
+    	userHash : userHash,
+    	x : x,
+    	y : y,
+    	l : playerSquareDimension,
+    	b : playerSquareDimension,
+        color : "#441111"
+    }
 }
 
 var mapSquareSize = 100000 ;
+for (var i = 1 ; i <= 100000 ; i++)
+{
+    var tree = new Object();
+    tree.x = Math.floor(Math.random() * (mapSquareSize)) + 0 ;
+    tree.y = Math.floor(Math.random() * (mapSquareSize)) + 0 ;
+    tree.l = 10 ;
+    tree.b = 20 ;
+    tree.color = "#111199";
+    listOfObjects.push(tree);
+}
+for (var i = 1 ; i <= 100000 ; i++)
+{
+    var rock = new Object();
+    rock.x = Math.floor(Math.random() * (mapSquareSize)) + 0 ;
+    rock.y = Math.floor(Math.random() * (mapSquareSize)) + 0 ;
+    rock.l = 10 ;
+    rock.b = 10 ;
+    rock.color = "#000000";
+    listOfObjects.push(rock);
+}
 function handler (req, res) {
 	var headers = {
 	    'Access-Control-Allow-Origin': '*',
@@ -141,15 +163,23 @@ startup = () => {
 	io.on('connection', function (socket) {
 		console.log('Connected');
 		socket.on('UpdateCoords', function(player) {
-
+            console.log(player);
 			var ID = player.ID - 1;
 			userArray[ID].x = player.x;
 			userArray[ID].y = player.y;
 
+            console.log(listOfObjects[0]);
 			console.log("Changed Position of User #" + (ID+1) + " to (" + userArray[ID].x + "," + userArray[ID].y + ").");
-
+            //emitMap(player, player.ID);
+            socket.emit('MapGen', {ObjectList : listOfObjects,  UserPositionX : player.x, UserPositionY : player.y, curId : ID});
 
 		});
+        /*emitMap = (user, curId) =>{
+            // Filter only in scope objects from listOfObjects here
+            //curId starts from zero
+            socket.emit('MapGen', {ObjectList : listOfObjects,  UserPositionX : user.x, UserPositionY : user.y, curId : curId});
+
+        }*/
 		socket.on('Username', function (data) {
 			var doesHashExist = 1 ;
 			while (doesHashExist == 1)
@@ -173,7 +203,7 @@ startup = () => {
     		console.log("Logging in");
 
     		//var user = new User(data.id, hash, Math.floor(Math.random() * (mapSquareSize- playerSquareDimension )) + 0, Math.floor(Math.random() * (mapSquareSize - playerSquareDimension)) + 0);
-    		var user = new User(data.id, hash, 99500,99500);
+    		var user = User(data.id, hash, 99500,99500);
     		var curId = userArray.push(user);
 
     		console.log("### CURRENT USER DETAILS : USER #" + (curId+1) + " ###");
@@ -182,31 +212,8 @@ startup = () => {
     		console.log("UserPositionX = " + user.x);
     		console.log("UserPositionY = " + user.y);
     		listOfObjects.push(user);
-    		// Let's create tree objects
-    		for (var i = 1 ; i <= 100000 ; i++)
-    		{
-    			var tree = new Object();
-    			tree.x = Math.floor(Math.random() * (mapSquareSize)) + 0 ;
-    			tree.y = Math.floor(Math.random() * (mapSquareSize)) + 0 ;
-    			tree.l = 10 ;
-    			tree.b = 20 ;
-    			tree.color = "#111199";
-    			listOfObjects.push(tree);
-    		}
-    		for (var i = 1 ; i <= 100000 ; i++)
-    		{
-    			var rock = new Object();
-    			rock.x = Math.floor(Math.random() * (mapSquareSize)) + 0 ;
-    			rock.y = Math.floor(Math.random() * (mapSquareSize)) + 0 ;
-    			rock.l = 10 ;
-    			rock.b = 10 ;
-    			rock.color = "#000000";
-    			listOfObjects.push(rock);
-    		}
-    		// Initialize all objects on Map like this and pass it to MapGen
-
-    		socket.emit('MapGen', {ObjectList : listOfObjects,  UserPositionX : user.x, UserPositionY : user.y, curId : curId});
-
+    		//emitMap(user, curId);
+            socket.emit('UserId', {x:user.x, y:user.y, ID:curId});
 		});
 	});
 

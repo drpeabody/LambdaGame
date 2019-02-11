@@ -51,6 +51,30 @@
 	var correctionFactor = 0.95 ;
 	var playerSquareDimensions = 10 ;
 	var MapSize = 100000 ;
+	var curId;
+	canvas = document.getElementById("fuckyou");
+
+	var player = null;
+	function User(x,y,cameraX, cameraY)
+{
+	return {
+        x : x ,
+        y : y ,
+        cameraX : cameraX ,
+        cameraY : cameraY ,
+        bwDown : false ,
+        bADown : false ,
+        bSDown : false ,
+        bDDown : false 
+    }
+}
+	var user = null  ;
+	/*player = {
+					x: data.UserPositionX, y: data.UserPositionY,
+					cameraX: (data.UserPositionX + playerSquareDimensions/2 - canvas.width/2),
+					cameraY: (data.UserPositionY + playerSquareDimensions/2 - canvas.height/2),
+					bWDown: false, bADown: false, bSDown: false, bDDown: false //Input Tracking var
+				};*/
 	connect = (id) => {
 		// io.origins('*:*');
 		// socket = io('http://192.168.0.130:8080/', {id: id});
@@ -59,29 +83,13 @@
 		socket.on('AccountExists', function(doesAccountExist) {
 			g('input-form-label').innerHTML = 'This username already exists';
 		});
-		socket.on('MapGen', function(data) {
-			// Clear the div out
+		socket.on('UserId', function(plr){
 			var elem = document.getElementById("login-form");
 			elem.parentNode.removeChild(elem);
-			// Init canvas
-			canvas = document.getElementById("fuckyou");
-			canvas.width = window.innerWidth * correctionFactor;
-			canvas.height = window.innerHeight * correctionFactor;
-			ctx = canvas.getContext('2d');
-
-			player = {
-				x: data.UserPositionX, y: data.UserPositionY,
-				cameraX: (data.UserPositionX + playerSquareDimensions/2 - canvas.width/2),
-				cameraY: (data.UserPositionY + playerSquareDimensions/2 - canvas.height/2),
-				bWDown: false, bADown: false, bSDown: false, bDDown: false //Input Tracking var
-			}
-
-			// tree = {
-			// 	// x: Math.random()*mapSize, y: Math.random()*mapSize
-			// 	x: player.x + 30, y: player.y + 30
-			// }
-
-			document.onkeydown = (e) => {
+            player = User(plr.x, plr.y, plr.cameraX, plr.cameraY);
+            console.log("UserId received");
+            curId = plr.ID ;
+            document.onkeydown = (e) => {
 				// console.log("Key Pressed " + e.key);
 				var key = e.key ;
 				if ((key === 'w')) player.bWDown = true ;
@@ -97,8 +105,9 @@
 				if ((key === 's')) player.bSDown = false ;
 				if ((key === 'd')) player.bDDown = false ;
 			}
-
-			draw = () => {
+			update();
+		})
+		draw = (data) => {
 				
 				// Figure out better way ?
 				// for (var i = 0 ; i < canvas.width ; i++)
@@ -117,6 +126,13 @@
 				// 		}
 				// 	}
 				// }
+
+				////Code duplication here should be fixed!!!!!
+								canvas.width = window.innerWidth * correctionFactor;
+				canvas.height = window.innerHeight * correctionFactor;
+				ctx = canvas.getContext('2d');
+
+				
 				ctx.fillStyle = "#113311";
 				ctx.fillRect(0,0,canvas.width,canvas.height);
 
@@ -145,9 +161,10 @@
 
 				// ctx.fillStyle = "#111199";
 				// ctx.fillRect(tree.x - player.x, tree.y - player.y, 20, 20);
-
+				console.log(data.ObjectList[0]);
 				for (var i = 0 ; i < data.ObjectList.length ; i++)
 				{
+
 					if (data.ObjectList[i].x >= player.cameraX && data.ObjectList[i].x <= (player.cameraX + canvas.width) && data.ObjectList[i].y >= player.cameraY && data.ObjectList[i].y <= (player.cameraY + canvas.height))
 					{
 						console.log("This object has been rendered.")
@@ -156,11 +173,8 @@
 					}
 				}
 
-				requestAnimationFrame(draw);
-
-				update();
+				//update();
 			}
-
 			update = () => {
 				//Sync with server - All Socet.emit here
 				//Process input
@@ -171,16 +185,49 @@
 				// if (Math.abs(player.x - data.UserPositionX) <= verificationSquareSize && Math.abs(player.y - data.UserPositionY) <= verificationSquareSize)
 				if (true)
 				{
-					if (player.bWDown && (player.y - speed>= 0)) {player.y -= speed; player.cameraY -= speed ;socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
-					if (player.bADown && (player.x - speed>= 0)) {player.x -= speed; player.cameraX -= speed ;socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
-					if (player.bSDown && (player.y + playerSquareDimensions + speed <= MapSize)) {player.y += speed; player.cameraY += speed ;socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
-					if (player.bDDown && (player.x + playerSquareDimensions + speed) <= MapSize) {player.x += speed; player.cameraX += speed ;socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
+					console.log("Updating coords");
+					if (player.bWDown && (player.y - speed>= 0))
+						player.y -= speed; player.cameraY -= speed ;
+					if (player.bADown && (player.x - speed>= 0))
+						player.x -= speed; player.cameraX -= speed ;
+					if (player.bSDown && (player.y + playerSquareDimensions + speed <= MapSize))
+						player.y += speed; player.cameraY += speed ;
+					if (player.bDDown && (player.x + playerSquareDimensions + speed) <= MapSize) 
+						player.x += speed; player.cameraX += speed ;
+					socket.emit('UpdateCoords', {x:player.x, y:player.y, ID:curId});
 				}
+				requestAnimationFrame(update);
+
 				// Figure out some way of verification server-side
 			}
+		socket.on('MapGen', function(data) {
+			// Clear the div out
+			console.log("MapGen received");
+			// var elem = document.getElementById("login-form");
+			// elem.parentNode.removeChild(elem);
+			// Init canvas
+			canvas = document.getElementById("fuckyou");
+			canvas.width = window.innerWidth * correctionFactor;
+			canvas.height = window.innerHeight * correctionFactor;
+			ctx = canvas.getContext('2d');
 
-			draw();
+			player = {
+				x: data.UserPositionX, y: data.UserPositionY,
+				cameraX: (data.UserPositionX + playerSquareDimensions/2 - canvas.width/2),
+				cameraY: (data.UserPositionY + playerSquareDimensions/2 - canvas.height/2),
+				bWDown: false, bADown: false, bSDown: false, bDDown: false //Input Tracking var
+			}
+
+			// tree = {
+			// 	// x: Math.random()*mapSize, y: Math.random()*mapSize
+			// 	x: player.x + 30, y: player.y + 30
+			// }
+
+			draw(data);	
 		});
+
+		//update();
+
 		// socket.on('news', function (data) {
 		// 	console.log(data);
 		// 	socket.emit('my other event', { my: 'data' });
