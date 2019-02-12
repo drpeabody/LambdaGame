@@ -190,13 +190,14 @@ startup = () => {
 			console.log("Changed Position of User #" + (ID) + " to (" + userArray[ID-1].x + "," + userArray[ID-1].y + ").");
             //emitMap(player, player.ID);
             var emitObjects=[];//The list of objects within user's view
-            for(var obj in listOfObjects){
+            for(var i = 0; i < listOfObjects.length; i++){
+                obj = listOfObjects[i];
                 if(obj.x + obj.l >= player.cameraX &&  obj.x <= player.cameraX + player.canvasWidth &&
                     obj.y + obj.b >= player.cameraY &&  obj.y <= player.cameraY + player.canvasHeight)
                     emitObjects.push(obj);
             }
             socket.emit('MapGen', {ObjectList : emitObjects,  UserPositionX : x, UserPositionY : y, curId : ID});
-            console.log('Emitted.');
+            console.log('Emitted.', emitObjects.length);
 		});
         /*emitMap = (user, curId) =>{
             // Filter only in scope objects from listOfObjects here
