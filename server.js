@@ -164,15 +164,21 @@ startup = () => {
 		console.log('Connected');
 		socket.on('UpdateCoords', function(player) {
             console.log(player);
-			var ID = player.ID - 1;
-			userArray[ID].x = player.x;
-			userArray[ID].y = player.y;
+			var ID = player.ID;
+			userArray[ID-1].x = player.x;
+			userArray[ID-1].y = player.y;
 
-            console.log(listOfObjects[0]);
-			console.log("Changed Position of User #" + (ID+1) + " to (" + userArray[ID].x + "," + userArray[ID].y + ").");
+            console.log(userArray[ID-1], listOfObjects[200000]);
+			console.log("Changed Position of User #" + (ID) + " to (" + userArray[ID-1].x + "," + userArray[ID-1].y + ").");
             //emitMap(player, player.ID);
-            socket.emit('MapGen', {ObjectList : listOfObjects,  UserPositionX : player.x, UserPositionY : player.y, curId : ID});
-
+            var emitObjects=[];//The list of objects within user's view
+            for(var obj in listOfObjects){
+                if(obj.x + obj.l >= player.cameraX &&  obj.x <= player.cameraX + player.canvasWidth &&
+                    obj.y + obj.b >= player.cameraY &&  obj.y <= player.cameraY + player.canvasHeight)
+                    emitObjects.push(obj);
+            }
+            socket.emit('MapGen', {ObjectList : emitObjects,  UserPositionX : player.x, UserPositionY : player.y, curId : ID});
+            console.log('Emitted.');
 		});
         /*emitMap = (user, curId) =>{
             // Filter only in scope objects from listOfObjects here

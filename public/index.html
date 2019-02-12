@@ -80,6 +80,7 @@
 		// socket = io('http://192.168.0.130:8080/', {id: id});
 		socket = io('http://localhost:8080/', {id: id});
 		socket.emit('Username', {id: id, windowWidth : (window.innerWidth * correctionFactor), windowHeight : (window.innerHeight*correctionFactor)});
+		console.log('Emitted Username');
 		socket.on('AccountExists', function(doesAccountExist) {
 			g('input-form-label').innerHTML = 'This username already exists';
 		});
@@ -126,7 +127,7 @@
 				// 		}
 				// 	}
 				// }
-
+				console.log('drawing');
 				////Code duplication here should be fixed!!!!!
 								canvas.width = window.innerWidth * correctionFactor;
 				canvas.height = window.innerHeight * correctionFactor;
@@ -165,7 +166,7 @@
 				for (var i = 0 ; i < data.ObjectList.length ; i++)
 				{
 
-					if (data.ObjectList[i].x >= player.cameraX && data.ObjectList[i].x <= (player.cameraX + canvas.width) && data.ObjectList[i].y >= player.cameraY && data.ObjectList[i].y <= (player.cameraY + canvas.height))
+					/*if (data.ObjectList[i].x >= player.cameraX && data.ObjectList[i].x <= (player.cameraX + canvas.width) && data.ObjectList[i].y >= player.cameraY && data.ObjectList[i].y <= (player.cameraY + canvas.height))*/
 					{
 						console.log("This object has been rendered.")
 						ctx.fillStyle = data.ObjectList[i].color ;
@@ -186,7 +187,7 @@
 				if (true)
 				{
 					console.log("Updating coords");
-					console.log(player.y+playerSquareDimensions+speed, MapSize);
+					console.log(player.x, player.y);
 					if (player.bWDown && (player.y - speed>= 0)){
 						player.y -= speed; player.cameraY -= speed ;
 					}
@@ -199,7 +200,7 @@
 					if (player.bDDown && (player.x + playerSquareDimensions + speed) <= MapSize){ 
 						player.x += speed; player.cameraX += speed ;
 					}
-					socket.emit('UpdateCoords', {x:player.x, y:player.y, ID:curId});
+					socket.emit('UpdateCoords', {x:player.x, y:player.y, ID:curId, cameraX: player.cameraX, cameraY:player.cameraY, canvasWidth:canvas.width, canvasHeight:canvas.height});
 				}
 				requestAnimationFrame(update);
 
@@ -212,17 +213,19 @@
 			// elem.parentNode.removeChild(elem);
 			// Init canvas
 			canvas = document.getElementById("fuckyou");
-			canvas.width = window.innerWidth * correctionFactor;
-			canvas.height = window.innerHeight * correctionFactor;
 			ctx = canvas.getContext('2d');
 
-			player = {
+			player.x = data.UserPositionX;
+			player.y = data.UserPositionY;
+			player.cameraX = data.UserPositionX + playerSquareDimensions/2 - canvas.width/2;
+			player.cameraY = (data.UserPositionY + playerSquareDimensions/2 - canvas.height/2);
+			 /*= {
 				x: data.UserPositionX, y: data.UserPositionY,
 				cameraX: (data.UserPositionX + playerSquareDimensions/2 - canvas.width/2),
 				cameraY: (data.UserPositionY + playerSquareDimensions/2 - canvas.height/2),
-				bWDown: false, bADown: false, bSDown: false, bDDown: false //Input Tracking var
-			}
-
+				bWDown: player.bWDown, bADown: player., bSDown: false, bDDown: false //Input Tracking var
+			};*/
+			console.log(player);
 			// tree = {
 			// 	// x: Math.random()*mapSize, y: Math.random()*mapSize
 			// 	x: player.x + 30, y: player.y + 30
