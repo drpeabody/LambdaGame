@@ -39,6 +39,8 @@ function User(userName, userHash, x, y)
 }
 
 var mapSquareSize = 100000 ;
+var playerSquareDimensions = 10 ;
+var MapSize = 100000 ;
 for (var i = 1 ; i <= 100000 ; i++)
 {
     var tree = new Object();
@@ -165,9 +167,25 @@ startup = () => {
 		socket.on('UpdateCoords', function(player) {
             console.log(player);
 			var ID = player.ID;
-			userArray[ID-1].x = player.x;
-			userArray[ID-1].y = player.y;
-
+            var speed = 5;
+			//userArray[ID-1].x = player.x;
+			//userArray[ID-1].y = player.y;
+            x = userArray[ID-1].x;
+            y = userArray[ID-1].y;
+            if (player.bWDown && (y - speed>= 0)){
+                y -= speed; player.cameraY -= speed ;
+            }
+            if (player.bADown && (x - speed>= 0)){
+                x -= speed; player.cameraX -= speed ;
+            }
+            if (player.bSDown && (y + playerSquareDimensions + speed <= MapSize)){
+                y += speed; player.cameraY += speed ;
+            }
+            if (player.bDDown && (x + playerSquareDimensions + speed) <= MapSize){ 
+                x += speed; player.cameraX += speed ;
+            }
+            userArray[ID-1].x = x;
+            userArray[ID-1].y = y;
             console.log(userArray[ID-1], listOfObjects[200000]);
 			console.log("Changed Position of User #" + (ID) + " to (" + userArray[ID-1].x + "," + userArray[ID-1].y + ").");
             //emitMap(player, player.ID);
@@ -177,7 +195,7 @@ startup = () => {
                     obj.y + obj.b >= player.cameraY &&  obj.y <= player.cameraY + player.canvasHeight)
                     emitObjects.push(obj);
             }
-            socket.emit('MapGen', {ObjectList : emitObjects,  UserPositionX : player.x, UserPositionY : player.y, curId : ID});
+            socket.emit('MapGen', {ObjectList : emitObjects,  UserPositionX : x, UserPositionY : y, curId : ID});
             console.log('Emitted.');
 		});
         /*emitMap = (user, curId) =>{

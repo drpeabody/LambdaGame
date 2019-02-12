@@ -184,7 +184,7 @@
 				var verificationSquareSize = 300 * speed ;
 				// Temporary Fix : 
 				// if (Math.abs(player.x - data.UserPositionX) <= verificationSquareSize && Math.abs(player.y - data.UserPositionY) <= verificationSquareSize)
-				if (true)
+				/*if (true)
 				{
 					console.log("Updating coords");
 					console.log(player.x, player.y);
@@ -201,7 +201,8 @@
 						player.x += speed; player.cameraX += speed ;
 					}
 					socket.emit('UpdateCoords', {x:player.x, y:player.y, ID:curId, cameraX: player.cameraX, cameraY:player.cameraY, canvasWidth:canvas.width, canvasHeight:canvas.height});
-				}
+				}*/
+				socket.emit('UpdateCoords', {bWDown: player.bWDown, bSDown: player.bSDown, bADown:player.bADown, bDDown: player.bDDown, ID:curId, cameraX: player.cameraX, cameraY:player.cameraY, canvasWidth:canvas.width, canvasHeight:canvas.height});
 				requestAnimationFrame(update);
 
 				// Figure out some way of verification server-side
