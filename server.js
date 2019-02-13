@@ -227,8 +227,8 @@ startup = () => {
     		// Make mongoDB account. 
     		console.log("Logging in");
 
-    		//var user = new User(data.id, hash, Math.floor(Math.random() * (mapSquareSize- playerSquareDimension )) + 0, Math.floor(Math.random() * (mapSquareSize - playerSquareDimension)) + 0);
-    		var user = User(data.id, hash, 99500,99500);
+    		var user = new User(data.id, hash, Math.floor(Math.random() * (mapSquareSize- playerSquareDimension )) + 0, Math.floor(Math.random() * (mapSquareSize - playerSquareDimension)) + 0);
+    		// var user = User(data.id, hash, 99500,99500);
     		var curId = userArray.push(user);
 
     		console.log("### CURRENT USER DETAILS : USER #" + (curId+1) + " ###");
