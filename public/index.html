@@ -109,7 +109,7 @@
 	connect = (id) => {
 		// io.origins('*:*');
 		// socket = io('http://192.168.0.130:8080/', {id: id});
-		socket = io('http://192.168.0.116:8080/', {id: id});
+		socket = io(url, {id: id});
 		socket.emit('Username', {id: id, windowWidth : (window.innerWidth * correctionFactor), windowHeight : (window.innerHeight*correctionFactor)});
 		socket.on('AccountExists', function(doesAccountExist) {
 			g('input-form-label').innerHTML = 'This username already exists';
