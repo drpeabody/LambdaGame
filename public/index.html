@@ -80,7 +80,7 @@
 		httpRequest.send(JSON.stringify(data));
 		return httpRequest;
 	}
-	url = 'http://192.168.0.116:8080';
+	url = 'http://localhost:8080';
 
 	var hasAskedOnce = false;
 	var playerSquareSize = 50;
@@ -159,7 +159,7 @@
 				// }
 				console.log('drawing');
 				////Code duplication here should be fixed!!!!!
-								canvas.width = window.innerWidth * correctionFactor;
+			        canvas.width = window.innerWidth * correctionFactor;
 				canvas.height = window.innerHeight * correctionFactor;
 				ctx = canvas.getContext('2d');
 

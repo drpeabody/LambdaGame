@@ -24,7 +24,8 @@ function User(userName, userHash, x, y)
     	y : y,
     	l : playerSquareDimension,
     	b : playerSquareDimension,
-        color : "#441111"
+        color : "#441111",
+        currentObjects : []    
     }
 }
 for (var i = 1 ; i <= 100000 ; i++)
@@ -147,16 +148,60 @@ startup = () => {
 			//userArray[ID-1].y = player.y;
             x = userArray[ID-1].x;
             y = userArray[ID-1].y;
+            // Check for collisions
+            
+            var currentObjects = userArray[ID-1].currentObjects ;
+
             if (player.bWDown && (y - speed>= 0)){
-                y -= speed; player.cameraY -= speed ;
+                var willCollide = false ;
+                
+                for (var ctr = 0 ; ctr < currentObjects.length ; ctr++)
+                {
+                    if ((y-speed > listOfObjects[currentObjects[ctr]].y)&&(y - speed < listOfObjects[currentObjects[ctr]].y + listOfObjects[currentObjects[ctr]].b) && (x + playerSquareDimensions > listOfObjects[currentObjects[ctr]].x) && (x < listOfObjects[currentObjects[ctr]].x + listOfObjects[currentObjects[ctr]].l))
+					{	
+						willCollide = true ; break ; }
+				}        
+				if (!willCollide)
+				{
+                	y -= speed; player.cameraY -= speed ;
+				}
             }
             if (player.bADown && (x - speed>= 0)){
-                x -= speed; player.cameraX -= speed ;
+            	var willCollide = false ;
+            	
+                for (var ctr = 0 ; ctr < currentObjects.length ; ctr++)
+                {	
+                    if ((x - speed > listOfObjects[currentObjects[ctr]].x) && (x - speed < listOfObjects[currentObjects[ctr]].x + listOfObjects[currentObjects[ctr]].l) && (y + playerSquareDimensions > listOfObjects[currentObjects[ctr]].y) && (y < listOfObjects[currentObjects[ctr]].y + listOfObjects[currentObjects[ctr]].b))
+					{	willCollide = true ; break ; }
+				}        
+				if (!willCollide)
+                {
+                	x -= speed; player.cameraX -= speed ;
+                }	
             }
-            if (player.bSDown && (y + playerSquareDimensions + speed <= MapSize)){
+            if (player.bSDown && (y + playerSquareDimensions + speed <= MapSize))
+            {
+            	var willCollide = false ;
+            	var currentObjects = userArray[ID-1].currentObjects ;
+                for (var ctr = 0 ; ctr < userArray[ID-1].currentObjects.length ; ctr++)
+                {
+                    if ((y + speed + playerSquareDimensions > listOfObjects[currentObjects[ctr]].y) && (y + speed + playerSquareDimensions < listOfObjects[currentObjects[ctr]].y + listOfObjects[currentObjects[ctr]].b) && (x + playerSquareDimensions > listOfObjects[currentObjects[ctr]].x) && (x < listOfObjects[currentObjects[ctr]].x + listOfObjects[currentObjects[ctr]].l))
+					{	willCollide = true ; break ; }
+				}        
+				if (!willCollide)
                 y += speed; player.cameraY += speed ;
             }
             if (player.bDDown && (x + playerSquareDimensions + speed) <= MapSize){ 
+            	var willCollide = false ;
+            	var currentObjects = userArray[ID-1].currentObjects ;
+                for (var ctr = 0 ; ctr < userArray[ID-1].currentObjects.length ; ctr++)
+                {
+                    if ((x + speed + playerSquareDimensions > listOfObjects[currentObjects[ctr]].x) && (x + speed + playerSquareDimensions < listOfObjects[currentObjects[ctr]].x + listOfObjects[currentObjects[ctr]].l) && (y + playerSquareDimensions > listOfObjects[currentObjects[ctr]].y) && (y < listOfObjects[currentObjects[ctr]].y + listOfObjects[currentObjects[ctr]].b))
+					{
+						willCollide = true ; break ;
+					}
+				}        
+				if (!willCollide)
                 x += speed; player.cameraX += speed ;
             }
             userArray[ID-1].x = x;
@@ -165,11 +210,15 @@ startup = () => {
 			// console.log("Changed Position of User #" + (ID) + " to (" + userArray[ID-1].x + "," + userArray[ID-1].y + ").");
             //emitMap(player, player.ID);
             var emitObjects=[];//The list of objects within user's view
+            userArray[ID-1].currentObjects = [];
             for(var i = 0; i < listOfObjects.length; i++){
                 obj = listOfObjects[i];
                 if(obj.x + obj.l >= player.cameraX &&  obj.x <= player.cameraX + player.canvasWidth &&
                     obj.y + obj.b >= player.cameraY &&  obj.y <= player.cameraY + player.canvasHeight)
+                {
                     emitObjects.push(obj);
+                    userArray[ID-1].currentObjects.push(i);
+                }
             }
             socket.emit('MapGen', {ObjectList : emitObjects,  UserPositionX : x, UserPositionY : y, curId : ID});
             // console.log('Emitted.', emitObjects.length);
