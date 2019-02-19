@@ -80,12 +80,12 @@
 		httpRequest.send(JSON.stringify(data));
 		return httpRequest;
 	}
-	url = 'http://localhost:8080';
+	url = 'http://192.168.0.103:8080';
 
 	var hasAskedOnce = false;
 	var playerSquareSize = 50;
 	var correctionFactor = 0.95 ;
-	var playerSquareDimensions = 10 ;
+	var playerSquareDimensions = playerSquareSize ;
 	var MapSize = 100000 ;
 	var curId;
 	canvas = document.getElementById("fuckyou");
@@ -118,7 +118,10 @@
 			var elem = document.getElementById("login-form");
 			elem.parentNode.removeChild(elem);
             player = User(plr.x, plr.y, plr.cameraX, plr.cameraY);
-            console.log("UserId received");
+            canvas = document.getElementById("fuckyou");
+			ctx = canvas.getContext('2d');
+			canvas.width = window.innerWidth * correctionFactor;
+			canvas.height = window.innerHeight * correctionFactor;
             curId = plr.ID ;
             document.onkeydown = (e) => {
 				// console.log("Key Pressed " + e.key);
@@ -157,51 +160,61 @@
 				// 		}
 				// 	}
 				// }
-				console.log('drawing');
 				////Code duplication here should be fixed!!!!!
-			        canvas.width = window.innerWidth * correctionFactor;
-				canvas.height = window.innerHeight * correctionFactor;
 				ctx = canvas.getContext('2d');
 
 				
 				ctx.fillStyle = "#113311";
 				ctx.fillRect(0,0,canvas.width,canvas.height);
-
-				if (player.cameraX < 0 )
-				{
-					ctx.fillStyle = "#000000";
-					ctx.fillRect(0,0,-player.cameraX, canvas.height);
-				}
-				if (player.cameraY < 0 )
-				{
-					ctx.fillStyle = "#000000";
-					ctx.fillRect(0,0,canvas.width, -player.cameraY);
-				}
-				if (player.cameraY + canvas.height >= MapSize)
-				{
-					ctx.fillStyle = "#000000";
-					ctx.fillRect(0,MapSize - player.cameraY,canvas.width, canvas.height- (MapSize - player.cameraY));
-				}
-				if (player.cameraX + canvas.width >= MapSize)
-				{
-					ctx.fillStyle = "#000000";
-					ctx.fillRect(MapSize - player.cameraX, 0, canvas.width - (MapSize - player.cameraX), canvas.height);
-				}
+				// Work on this   ()()()(CIP)
+				// if (player.cameraX < 0 )
+				// {
+				// 	ctx.fillStyle = "#000000";
+				// 	ctx.fillRect(0,0,-player.cameraX, canvas.height);
+				// }
+				// if (player.cameraY < 0 )
+				// {
+				// 	ctx.fillStyle = "#000000";
+				// 	ctx.fillRect(0,0,canvas.width, -player.cameraY);
+				// }
+				// if (player.cameraY + canvas.height >= MapSize)
+				// {
+				// 	ctx.fillStyle = "#000000";
+				// 	ctx.fillRect(0,MapSize - player.cameraY,canvas.width, canvas.height- (MapSize - player.cameraY));
+				// }
+				// if (player.cameraX + canvas.width >= MapSize)
+				// {
+				// 	ctx.fillStyle = "#000000";
+				// 	ctx.fillRect(MapSize - player.cameraX, 0, canvas.width - (MapSize - player.cameraX), canvas.height);
+				// }
 				ctx.fillStyle = "#441111";
 				ctx.fillRect((canvas.width- playerSquareDimensions )/2, (canvas.height- playerSquareDimensions )/2, playerSquareDimensions, playerSquareDimensions);
 
 				// ctx.fillStyle = "#111199";
 				// ctx.fillRect(tree.x - player.x, tree.y - player.y, 20, 20);
-				console.log(data.ObjectList[0]);
 				for (var i = 0 ; i < data.ObjectList.length ; i++)
 				{
 
 					/*if (data.ObjectList[i].x >= player.cameraX && data.ObjectList[i].x <= (player.cameraX + canvas.width) && data.ObjectList[i].y >= player.cameraY && data.ObjectList[i].y <= (player.cameraY + canvas.height))*/
 					{
-						console.log("This object has been rendered.")
-						ctx.fillStyle = data.ObjectList[i].color ;
-						ctx.fillRect(data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y - player.cameraY, data.ObjectList[i].l, data.ObjectList[i].b);
+						var color = "";
+						
+						switch(data.ObjectList[i].type)
+						{
+							case 0: 
+								color = "#441111";
+							break ;
+							case 1:
+								color = "#42692f";
+							break ;
+							case 2 :
+								color = "#000000";
+							break;
+						}
+						ctx.fillStyle = color ;
+						ctx.fillRect(data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y - player.cameraY, data.ObjectList[i].width, data.ObjectList[i].height);
 					}
+					
 				}
 
 				//update();
@@ -209,7 +222,6 @@
 			update = () => {
 				//Sync with server - All Socet.emit here
 				//Process input
-
 				var speed = 5 ;
 				var verificationSquareSize = 300 * speed ;
 				// Temporary Fix : 
@@ -239,13 +251,10 @@
 			}
 	socket.on('MapGen', function(data) {
 			// Clear the div out
-			console.log("MapGen received");
 			// var elem = document.getElementById("login-form");
 			// elem.parentNode.removeChild(elem);
 			// Init canvas
-			canvas = document.getElementById("fuckyou");
-			ctx = canvas.getContext('2d');
-
+			
 			player.x = data.UserPositionX;
 			player.y = data.UserPositionY;
 			player.cameraX = data.UserPositionX + playerSquareDimensions/2 - canvas.width/2;

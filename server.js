@@ -4,17 +4,14 @@ const vm = require('vm');
 const stdin = process.openStdin();
 var fs = require('fs');
 var mongo = require('./mongo.js');
-
-var listOfObjects = [];
+const Quadtree = require("quadtree-lib")
 var userArray = [];
 
-var playerSquareDimension = 10 ;
 
-
-var mapSquareSize = 100000 ;
-var playerSquareDimension = 10 ;
-var playerSquareDimensions = 10 ;
-var MapSize = 100000 ;
+var mapSquareSize = 10000000 ;
+var playerSquareDimension = 50 ;
+var playerSquareDimensions = playerSquareDimension ;
+var MapSize = mapSquareSize ;
 function User(userName, userHash, x, y)
 {
 	return {
@@ -28,26 +25,56 @@ function User(userName, userHash, x, y)
         currentObjects : []    
     }
 }
-for (var i = 1 ; i <= 100000 ; i++)
+
+
+/*
+	Quadtree Type Chart :
+	0 : Player
+	1 : Tree
+	2 : Rock
+*/
+
+
+var quadtree = new Quadtree({
+	width: mapSquareSize,
+	height: mapSquareSize
+});
+console.log("Generating Map");
+for (var i = 1 ; i <= 10000000 ; i++)
 {
-    var tree = new Object();
-    tree.x = Math.floor(Math.random() * (mapSquareSize)) + 0 ;
-    tree.y = Math.floor(Math.random() * (mapSquareSize)) + 0 ;
-    tree.l = 10 ;
-    tree.b = 20 ;
-    tree.color = "#111199";
-    listOfObjects.push(tree);
+    quadtree.push({
+    	x: Math.floor(Math.random() * (mapSquareSize)) + 0,
+    	y: Math.floor(Math.random() * (mapSquareSize)) + 0,
+    	width: 50,
+    	height: 100,
+    	type: 1
+    });
 }
-for (var i = 1 ; i <= 100000 ; i++)
+for (var i = 1 ; i <= 1000000 ; i++)
 {
-    var rock = new Object();
-    rock.x = Math.floor(Math.random() * (mapSquareSize)) + 0 ;
-    rock.y = Math.floor(Math.random() * (mapSquareSize)) + 0 ;
-    rock.l = 10 ;
-    rock.b = 10 ;
-    rock.color = "#000000";
-    listOfObjects.push(rock);
+    quadtree.push({
+    	x: Math.floor(Math.random() * (mapSquareSize)) + 0,
+    	y: Math.floor(Math.random() * (mapSquareSize)) + 0,
+    	width: 50,
+    	height: 50,
+    	type: 2
+    });
 }
+// listOfObjects = listOfObjects.concat(Array.from({ length: 1 }, () => ({
+//    x: Math.floor(Math.random() * (mapSquareSize)),
+//    y: Math.floor(Math.random() * (mapSquareSize)),  
+//    l: 50,
+//    b: 50,
+//    color: "#000000",
+// })));
+// listOfObjects = listOfObjects.concat(Array.from({ length: 1 }, () => ({
+//    x: Math.floor(Math.random() * (mapSquareSize)),
+//    y: Math.floor(Math.random() * (mapSquareSize)),  
+//    l: 50,
+//    b: 100,
+//    color: "#42692f",
+// })));
+console.log("Generation Done");
 function handler (req, res) {
 	var headers = {
 	    'Access-Control-Allow-Origin': '*',
@@ -141,6 +168,7 @@ startup = () => {
 	io.on('connection', function (socket) {
 		console.log('Connected');
 		socket.on('UpdateCoords', function(player) {
+			emitObjects = [];
             // console.log(player);
 			var ID = player.ID;
             var speed = 5;
@@ -148,8 +176,9 @@ startup = () => {
 			//userArray[ID-1].y = player.y;
             x = userArray[ID-1].x;
             y = userArray[ID-1].y;
+            var oldX = x ;
+            var oldY = y ;
             // Check for collisions
-            
             var currentObjects = userArray[ID-1].currentObjects ;
 
             if (player.bWDown && (y - speed>= 0)){
@@ -157,9 +186,8 @@ startup = () => {
                 
                 for (var ctr = 0 ; ctr < currentObjects.length ; ctr++)
                 {
-                    if ((y-speed > listOfObjects[currentObjects[ctr]].y)&&(y - speed < listOfObjects[currentObjects[ctr]].y + listOfObjects[currentObjects[ctr]].b) && (x + playerSquareDimensions > listOfObjects[currentObjects[ctr]].x) && (x < listOfObjects[currentObjects[ctr]].x + listOfObjects[currentObjects[ctr]].l))
-					{	
-						willCollide = true ; break ; }
+                    if ((y-speed > currentObjects[ctr].y)&&(y - speed < currentObjects[ctr].y + currentObjects[ctr].height) && (x + playerSquareDimensions > currentObjects[ctr].x) && (x < currentObjects[ctr].x + currentObjects[ctr].width))
+					{	willCollide = true ; break ; }
 				}        
 				if (!willCollide)
 				{
@@ -171,7 +199,7 @@ startup = () => {
             	
                 for (var ctr = 0 ; ctr < currentObjects.length ; ctr++)
                 {	
-                    if ((x - speed > listOfObjects[currentObjects[ctr]].x) && (x - speed < listOfObjects[currentObjects[ctr]].x + listOfObjects[currentObjects[ctr]].l) && (y + playerSquareDimensions > listOfObjects[currentObjects[ctr]].y) && (y < listOfObjects[currentObjects[ctr]].y + listOfObjects[currentObjects[ctr]].b))
+                    if ((x - speed > currentObjects[ctr].x) && (x - speed < currentObjects[ctr].x + currentObjects[ctr].width) && (y + playerSquareDimensions > currentObjects[ctr].y) && (y < currentObjects[ctr].y + currentObjects[ctr].height))
 					{	willCollide = true ; break ; }
 				}        
 				if (!willCollide)
@@ -182,44 +210,64 @@ startup = () => {
             if (player.bSDown && (y + playerSquareDimensions + speed <= MapSize))
             {
             	var willCollide = false ;
-            	var currentObjects = userArray[ID-1].currentObjects ;
                 for (var ctr = 0 ; ctr < userArray[ID-1].currentObjects.length ; ctr++)
                 {
-                    if ((y + speed + playerSquareDimensions > listOfObjects[currentObjects[ctr]].y) && (y + speed + playerSquareDimensions < listOfObjects[currentObjects[ctr]].y + listOfObjects[currentObjects[ctr]].b) && (x + playerSquareDimensions > listOfObjects[currentObjects[ctr]].x) && (x < listOfObjects[currentObjects[ctr]].x + listOfObjects[currentObjects[ctr]].l))
+                    if ((y + speed + playerSquareDimensions > currentObjects[ctr].y) && (y + speed + playerSquareDimensions < currentObjects[ctr].y + currentObjects[ctr].height) && (x + playerSquareDimensions > currentObjects[ctr].x) && (x < currentObjects[ctr].x + currentObjects[ctr].width))
 					{	willCollide = true ; break ; }
 				}        
 				if (!willCollide)
-                y += speed; player.cameraY += speed ;
+                {
+                	y += speed; 
+                	player.cameraY += speed ;
+                }
             }
             if (player.bDDown && (x + playerSquareDimensions + speed) <= MapSize){ 
             	var willCollide = false ;
-            	var currentObjects = userArray[ID-1].currentObjects ;
                 for (var ctr = 0 ; ctr < userArray[ID-1].currentObjects.length ; ctr++)
                 {
-                    if ((x + speed + playerSquareDimensions > listOfObjects[currentObjects[ctr]].x) && (x + speed + playerSquareDimensions < listOfObjects[currentObjects[ctr]].x + listOfObjects[currentObjects[ctr]].l) && (y + playerSquareDimensions > listOfObjects[currentObjects[ctr]].y) && (y < listOfObjects[currentObjects[ctr]].y + listOfObjects[currentObjects[ctr]].b))
+                    if ((x + speed + playerSquareDimensions > currentObjects[ctr].x) && (x + speed + playerSquareDimensions < currentObjects[ctr].x + currentObjects[ctr].width) && (y + playerSquareDimensions > currentObjects[ctr].y) && (y < currentObjects[ctr].y + currentObjects[ctr].height))
 					{
 						willCollide = true ; break ;
 					}
 				}        
 				if (!willCollide)
-                x += speed; player.cameraX += speed ;
+                {
+                	x += speed; 
+                	player.cameraX += speed ;
+                }
             }
+            var removeThis = quadtree.where({
+            	x: userArray[ID-1].x,
+            	y: userArray[ID-1].y
+            });
+
+            removeThis[0].x = x ;
+            removeThis[0].y = y ;
             userArray[ID-1].x = x;
             userArray[ID-1].y = y;
+
             // console.log(userArray[ID-1], listOfObjects[200000]);
 			// console.log("Changed Position of User #" + (ID) + " to (" + userArray[ID-1].x + "," + userArray[ID-1].y + ").");
             //emitMap(player, player.ID);
             var emitObjects=[];//The list of objects within user's view
-            userArray[ID-1].currentObjects = [];
-            for(var i = 0; i < listOfObjects.length; i++){
-                obj = listOfObjects[i];
-                if(obj.x + obj.l >= player.cameraX &&  obj.x <= player.cameraX + player.canvasWidth &&
-                    obj.y + obj.b >= player.cameraY &&  obj.y <= player.cameraY + player.canvasHeight)
-                {
-                    emitObjects.push(obj);
-                    userArray[ID-1].currentObjects.push(i);
-                }
-            }
+            
+            // for(var i = 0; i < listOfObjects.length; i++)
+            // {
+            //     obj = listOfObjects[i];
+            //     if(obj.x + obj.l >= player.cameraX &&  obj.x <= player.cameraX + player.canvasWidth &&
+            //         obj.y + obj.b >= player.cameraY &&  obj.y <= player.cameraY + player.canvasHeight)
+            //     {
+            //         emitObjects.push(obj);
+            //         userArray[ID-1].currentObjects.push(i);
+            //     }
+            // }
+           	emitObjects = emitObjects.concat(quadtree.colliding({
+           		x: (x + (playerSquareDimension-player.canvasWidth)/2) ,
+           		y: (y + (playerSquareDimension-player.canvasHeight)/2),
+           		width: player.canvasWidth ,
+           		height: player.canvasHeight
+           	})) ;
+            userArray[ID-1].currentObjects = emitObjects.slice();
             socket.emit('MapGen', {ObjectList : emitObjects,  UserPositionX : x, UserPositionY : y, curId : ID});
             // console.log('Emitted.', emitObjects.length);
 		});
@@ -246,7 +294,8 @@ startup = () => {
     		// Make mongoDB account. 
     		console.log("Logging in");
 
-    		var user = new User(data.id, hash, Math.floor(Math.random() * (mapSquareSize- playerSquareDimension )) + 0, Math.floor(Math.random() * (mapSquareSize - playerSquareDimension)) + 0);
+    		// var user = new User(data.id, hash, Math.floor(Math.random() * (mapSquareSize- playerSquareDimension )) + 0, Math.floor(Math.random() * (mapSquareSize - playerSquareDimension)) + 0);
+    		var user = new User(data.id, hash, Math.floor(Math.random() * (1000000 -  999000)) + 999000, Math.floor(Math.random() * (1000000 -  999000)) + 999000);
     		// var user = User(data.id, hash, 99500,99500);
     		var curId = userArray.push(user);
 
@@ -255,7 +304,13 @@ startup = () => {
     		console.log("Hash = " + user.userHash);	
     		console.log("UserPositionX = " + user.x);
     		console.log("UserPositionY = " + user.y);
-    		listOfObjects.push(user);
+    		quadtree.push({
+    			x: user.x ,
+    			y: user.y,
+    			width: playerSquareDimension,
+    			height: playerSquareDimension,
+    			type: 0
+    		},true);
     		//emitMap(user, curId);
             socket.emit('UserId', {x:user.x, y:user.y, ID:curId});
 		});
