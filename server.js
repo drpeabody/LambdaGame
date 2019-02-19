@@ -40,7 +40,7 @@ var quadtree = new Quadtree({
 	height: mapSquareSize
 });
 console.log("Generating Map");
-for (var i = 1 ; i <= 10000000 ; i++)
+for (var i = 1 ; i <= 1000000 ; i++)
 {
     quadtree.push({
     	x: Math.floor(Math.random() * (mapSquareSize)) + 0,
@@ -48,6 +48,26 @@ for (var i = 1 ; i <= 10000000 ; i++)
     	width: 50,
     	height: 100,
     	type: 1
+    });
+}
+for (var i = 1 ; i <= 1000000 ; i++)
+{
+    quadtree.push({
+    	x: Math.floor(Math.random() * (mapSquareSize)) + 0,
+    	y: Math.floor(Math.random() * (mapSquareSize)) + 0,
+    	width: 50,
+    	height: 50,
+    	type: 2
+    });
+}
+for (var i = 1 ; i <= 1000000 ; i++)
+{
+    quadtree.push({
+    	x: Math.floor(Math.random() * (mapSquareSize)) + 0,
+    	y: Math.floor(Math.random() * (mapSquareSize)) + 0,
+    	width: 50,
+    	height: 50,
+    	type: 2
     });
 }
 for (var i = 1 ; i <= 1000000 ; i++)
