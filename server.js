@@ -37,7 +37,7 @@ function User(userName, userHash, x, y)
 */
 
 
-var rtree = RTree(100);
+var rtree = RTree(150);
 var size = 10000000;
 console.time("Generating-map");
 for (var i = 1 ; i <= size ; i++)

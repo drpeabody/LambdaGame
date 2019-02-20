@@ -175,14 +175,20 @@
 				// 	}
 				// }
 				////Code duplication here should be fixed!!!!!
-
+				if (valChange == 1)
+				{
+					oldX = player.cameraX ;
+    				oldY = player.cameraY ;	
+    				valChange++;
+				}
 				var ptrn = ctx.createPattern(grass, 'repeat'); // Create a pattern with this image, and set it to "repeat".
 				ctx.fillStyle = ptrn;
+				// ctx.fillRect(0,0,canvas.width,canvas.height);
 				ctx.save();
     			ctx.translate(oldX-player.cameraX, oldY-player.cameraY);
-    			ctx.fillRect(-10000000, -10000000, 100000000,100000000);
+    			ctx.fillRect(-2000000, -2000000, 100000000,100000000);
     			ctx.restore();
-    			if (player.cameraX - oldX != 0 && player.cameraY - oldY != 0)
+    			if (player.cameraX - oldX == 0 && player.cameraY - oldY == 0)
     			{
     				oldX = player.cameraX ;
     				oldY = player.cameraY ;	
