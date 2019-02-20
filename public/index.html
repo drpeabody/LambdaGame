@@ -86,11 +86,21 @@
 	var playerSquareSize = 50;
 	var correctionFactor = 0.95 ;
 	var playerSquareDimensions = playerSquareSize ;
-	var MapSize = 100000 ;
+	var MapSize = 1000000 ;
 	var curId;
+	var oldX ;
+	var oldY ;
 	canvas = document.getElementById("fuckyou");
-
+	//Create Image object
+	var tree = new Image();
+	//Finally, start the loading process
+	tree.src = 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550645217/output-onlinepngtools.png';
+	var grass = new Image();
+	grass.src = 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550690972/2000Grass.png';
+	var rock = new Image();
+	rock.src = 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550657582/Rock.png';
 	var player = null;
+	var valChange = 1 ;
 	function User(x,y,cameraX, cameraY)
 {
 	return {
@@ -139,7 +149,11 @@
 				if ((key === 's')||(key === 'S')) player.bSDown = false ;
 				if ((key === 'd')||(key === 'D')) player.bDDown = false ;
 			}
+
+
+
 			update();
+
 		});
 		draw = (data) => {
 				
@@ -161,12 +175,18 @@
 				// 	}
 				// }
 				////Code duplication here should be fixed!!!!!
-				ctx = canvas.getContext('2d');
 
-				
-				ctx.fillStyle = "#113311";
-				ctx.fillRect(0,0,canvas.width,canvas.height);
-				// Work on this   ()()()(CIP)
+				var ptrn = ctx.createPattern(grass, 'repeat'); // Create a pattern with this image, and set it to "repeat".
+				ctx.fillStyle = ptrn;
+				ctx.save();
+    			ctx.translate(oldX-player.cameraX, oldY-player.cameraY);
+    			ctx.fillRect(-10000000, -10000000, 100000000,100000000);
+    			ctx.restore();
+    			if (player.cameraX - oldX != 0 && player.cameraY - oldY != 0)
+    			{
+    				oldX = player.cameraX ;
+    				oldY = player.cameraY ;	
+    			}
 				// if (player.cameraX < 0 )
 				// {
 				// 	ctx.fillStyle = "#000000";
@@ -195,28 +215,34 @@
 				for (var i = 0 ; i < data.ObjectList.length ; i++)
 				{
 
-					/*if (data.ObjectList[i].x >= player.cameraX && data.ObjectList[i].x <= (player.cameraX + canvas.width) && data.ObjectList[i].y >= player.cameraY && data.ObjectList[i].y <= (player.cameraY + canvas.height))*/
+					// if (data.ObjectList[i].x >= player.cameraX && data.ObjectList[i].x <= (player.cameraX + canvas.width) && data.ObjectList[i].y >= player.cameraY && data.ObjectList[i].y <= (player.cameraY + canvas.height))
 					{
-						var color = "";
 						
-						switch(data.ObjectList[i].type)
+						console.log("Here");
+						switch(data.ObjectList[i].leaf)
 						{
+							case -1:
+								ctx.drawImage(grass, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
+							break ;
 							case 0: 
-								color = "#441111";
+								ctx.fillStyle = "#441111";
+								ctx.fillRect(data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y - player.cameraY, data.ObjectList[i].w, data.ObjectList[i].h);
 							break ;
-							case 1:
-								color = "#42692f";
-							break ;
-							case 2 :
-								color = "#000000";
+							case 1 :
+								ctx.drawImage(rock, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
 							break;
+							case 2 :
+								ctx.drawImage(tree, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
+							break ;
+						
+						
+						
 						}
-						ctx.fillStyle = color ;
-						ctx.fillRect(data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y - player.cameraY, data.ObjectList[i].width, data.ObjectList[i].height);
+
+						
 					}
 					
 				}
-
 				//update();
 			}
 			update = () => {
@@ -245,6 +271,8 @@
 					socket.emit('UpdateCoords', {x:player.x, y:player.y, ID:curId, cameraX: player.cameraX, cameraY:player.cameraY, canvasWidth:canvas.width, canvasHeight:canvas.height});
 				}*/
 				socket.emit('UpdateCoords', {bWDown: player.bWDown, bSDown: player.bSDown, bADown:player.bADown, bDDown: player.bDDown, ID:curId, cameraX: player.cameraX, cameraY:player.cameraY, canvasWidth:canvas.width, canvasHeight:canvas.height});
+				
+				
 				requestAnimationFrame(update);
 
 				// Figure out some way of verification server-side
