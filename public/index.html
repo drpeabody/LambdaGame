@@ -101,6 +101,8 @@
 	grass.src = 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550690972/2000Grass.png';
 	var rock = new Image();
 	rock.src = 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550657582/Rock.png';
+	var sword = new Image();
+	sword.src = 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550735072/Sword.png';
 	var player = null;
 	var hasCameraChangedEver = false ;
 	function User(x,y,cameraX, cameraY)
@@ -216,23 +218,7 @@
 				// 	ctx.fillRect(MapSize - player.cameraX, 0, canvas.width - (MapSize - player.cameraX), canvas.height);
 				// }
 				//ctx.beginPath();
-				if(data.weapons["SRW"]){
-					console.log("I got the power.")
-					//Sprite for char with SRW
-					ctx.beginPath();
-					ctx.fillStyle = "#111144";					
-					ctx.fillRect((canvas.width- playerSquareDimensions )/2, (canvas.height- playerSquareDimensions )/2, wSRW, hSRW);
-					ctx.fillStyle = "#441111";
-					ctx.fillRect((canvas.width- playerSquareDimensions )/2 +  wSRW, (canvas.height- playerSquareDimensions )/2, playerSquareDimensions-wSRW, playerSquareDimensions);
-					ctx.fillRect((canvas.width- playerSquareDimensions )/2, (canvas.height- playerSquareDimensions )/2, playerSquareDimensions, playerSquareDimensions-hSRW);
-					ctx.closePath();
-				}
-				else{
-					ctx.beginPath();
-					ctx.fillStyle = "#441111";
-					ctx.fillRect((canvas.width- playerSquareDimensions )/2, (canvas.height- playerSquareDimensions )/2, playerSquareDimensions, playerSquareDimensions);
-					ctx.closePath();
-				}
+				
 				////////////////////////////FOR SRW
 				
 
@@ -262,15 +248,21 @@
 								ctx.drawImage(tree, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
 							break ;
 							case 3:
-								ctx.fillStyle = "#111144";
-								ctx.fillRect(data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y - player.cameraY, data.ObjectList[i].w, data.ObjectList[i].h);
+								ctx.drawImage(sword, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
 							break;
 						
 						}
-
 						
 					}
 					
+				}
+				ctx.fillStyle = "#441111";
+				ctx.fillRect((canvas.width- playerSquareDimensions )/2, (canvas.height- playerSquareDimensions )/2, playerSquareDimensions, playerSquareDimensions);
+				if(data.weapons["SRW"]){
+					console.log("I got the power.")
+					//Sprite for char with SRW
+					//ctx.beginPath();
+					ctx.drawImage(sword, (canvas.width- playerSquareDimensions )/2, (canvas.height- playerSquareDimensions )/2, sword.width * 0.5, sword.height * 0.5);
 				}
 				//update();
 			}

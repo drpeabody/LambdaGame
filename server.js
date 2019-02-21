@@ -39,7 +39,7 @@ function User(userName, userHash, x, y)
 
 
 var rtree = RTree(100);
-var size = 1000000;
+var size = 10000000;
 var noOfSRWOnMap = 3000000; //SRW = Short Range Weapons
 const wSRW = 30;
 const hSRW = 30;
