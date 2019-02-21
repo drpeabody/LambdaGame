@@ -23,7 +23,7 @@ function User(userName, userHash, x, y)
     	b : playerSquareDimension,
         color : "#441111",
         currentObjects : [],
-        weapons : []   
+        weapons : {}   
     }
 }
 
@@ -306,7 +306,8 @@ startup = () => {
            	emitObjects = emitObjects.concat(rtree.search({x:player.cameraX,y:player.cameraY,w:player.canvasWidth,h:player.canvasHeight},true));
             //console.log(rtree.search({x:player.cameraX,y:player.cameraY,w:player.canvasWidth,h:player.canvasHeight},true));
             userArray[ID-1].currentObjects = emitObjects.slice();
-            console.log(userArray[ID-1].weapons)
+            console.log(userArray[ID-1].weapons);
+            console.log(emitObjects);
             socket.emit('MapGen', {ObjectList : emitObjects,  UserPositionX : x, UserPositionY : y, curId : ID, weapons : userArray[ID-1].weapons});
             // console.log('Emitted.', emitObjects.length);
 		});

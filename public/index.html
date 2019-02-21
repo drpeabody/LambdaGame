@@ -215,14 +215,26 @@
 				// 	ctx.fillStyle = "#000000";
 				// 	ctx.fillRect(MapSize - player.cameraX, 0, canvas.width - (MapSize - player.cameraX), canvas.height);
 				// }
-				ctx.fillStyle = "#441111";
-				ctx.fillRect((canvas.width- playerSquareDimensions )/2, (canvas.height- playerSquareDimensions )/2, playerSquareDimensions, playerSquareDimensions);
-				////////////////////////////FOR SRW
+				//ctx.beginPath();
 				if(data.weapons["SRW"]){
 					console.log("I got the power.")
-					ctx.fillStyle = "#111144";
+					//Sprite for char with SRW
+					ctx.beginPath();
+					ctx.fillStyle = "#111144";					
 					ctx.fillRect((canvas.width- playerSquareDimensions )/2, (canvas.height- playerSquareDimensions )/2, wSRW, hSRW);
+					ctx.fillStyle = "#441111";
+					ctx.fillRect((canvas.width- playerSquareDimensions )/2 +  wSRW, (canvas.height- playerSquareDimensions )/2, playerSquareDimensions-wSRW, playerSquareDimensions);
+					ctx.fillRect((canvas.width- playerSquareDimensions )/2, (canvas.height- playerSquareDimensions )/2, playerSquareDimensions, playerSquareDimensions-hSRW);
+					ctx.closePath();
 				}
+				else{
+					ctx.beginPath();
+					ctx.fillStyle = "#441111";
+					ctx.fillRect((canvas.width- playerSquareDimensions )/2, (canvas.height- playerSquareDimensions )/2, playerSquareDimensions, playerSquareDimensions);
+					ctx.closePath();
+				}
+				////////////////////////////FOR SRW
+				
 
 
 				// ctx.fillStyle = "#111199";
