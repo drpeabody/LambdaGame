@@ -22,7 +22,8 @@ function User(userName, userHash, x, y)
     	l : playerSquareDimension,
     	b : playerSquareDimension,
         color : "#441111",
-        currentObjects : []    
+        currentObjects : [],
+        weapons : []   
     }
 }
 
@@ -33,12 +34,15 @@ function User(userName, userHash, x, y)
 	 0 : Player
 	 1 : Rock
 	 2 : Tree
-
+     3 : Short Range Weapon
 */
 
 
-var rtree = RTree(150);
-var size = 10000000;
+var rtree = RTree(100);
+var size = 1000000;
+var noOfSRWOnMap = 3000000; //SRW = Short Range Weapons
+const wSRW = 30;
+const hSRW = 30;
 console.time("Generating-map");
 for (var i = 1 ; i <= size ; i++)
 {
@@ -57,6 +61,14 @@ for (var i = 1 ; i <= size ; i++)
         w: 50,
         h: 50
     },2);
+}
+for(var i = 1; i <= noOfSRWOnMap; i++){
+    rtree.insert({
+        x: Math.floor(Math.random() * (mapSquareSize)) + 0,
+        y: Math.floor(Math.random() * (mapSquareSize)) + 0,
+        w: wSRW,
+        h: hSRW
+    },3);
 }
 console.timeEnd("Generating-map");
 // listOfObjects = listOfObjects.concat(Array.from({ length: 1 }, () => ({
@@ -186,7 +198,14 @@ startup = () => {
                 for (var ctr = 0 ; ctr < currentObjects.length ; ctr++)
                 {
                     if ((y-speed > currentObjects[ctr].y)&&(y - speed < currentObjects[ctr].y + currentObjects[ctr].h) && (x + playerSquareDimensions > currentObjects[ctr].x) && (x < currentObjects[ctr].x + currentObjects[ctr].w))
-					{	willCollide = true ; break ; }
+					{
+                    	willCollide = true;
+                        //If it is a short range weapon
+                        if(currentObjects[ctr].leaf == 3){
+                            weaponRemove(currentObjects[ctr]);
+                            updateWeapon(3);
+                        }
+                    }
 				}        
 				if (!willCollide)
 				{
@@ -199,7 +218,14 @@ startup = () => {
                 for (var ctr = 0 ; ctr < currentObjects.length ; ctr++)
                 {	
                     if ((x - speed > currentObjects[ctr].x) && (x - speed < currentObjects[ctr].x + currentObjects[ctr].w) && (y + playerSquareDimensions > currentObjects[ctr].y) && (y < currentObjects[ctr].y + currentObjects[ctr].h))
-					{	willCollide = true ; break ; }
+					{
+                        willCollide = true;
+                        //If it is a short range weapon
+                        if(currentObjects[ctr].leaf == 3){
+                            weaponRemove(currentObjects[ctr]);
+                            updateWeapon(3);
+                        }
+                     }
 				}        
 				if (!willCollide)
                 {
@@ -212,7 +238,14 @@ startup = () => {
                 for (var ctr = 0 ; ctr < userArray[ID-1].currentObjects.length ; ctr++)
                 {
                     if ((y + speed + playerSquareDimensions > currentObjects[ctr].y) && (y + speed + playerSquareDimensions < currentObjects[ctr].y + currentObjects[ctr].h) && (x + playerSquareDimensions > currentObjects[ctr].x) && (x < currentObjects[ctr].x + currentObjects[ctr].w))
-					{	willCollide = true ; break ; }
+					{
+                        willCollide = true;
+                        //If it is a short range weapon
+                        if(currentObjects[ctr].leaf == 3){
+                            weaponRemove(currentObjects[ctr]);
+                            updateWeapon(3);
+                        }
+                     }
 				}        
 				if (!willCollide)
                 {
@@ -226,13 +259,29 @@ startup = () => {
                 {
                     if ((x + speed + playerSquareDimensions > currentObjects[ctr].x) && (x + speed + playerSquareDimensions < currentObjects[ctr].x + currentObjects[ctr].w) && (y + playerSquareDimensions > currentObjects[ctr].y) && (y < currentObjects[ctr].y + currentObjects[ctr].h))
 					{
-						willCollide = true ; break ;
-					}
+                        willCollide = true;
+                        //If it is a short range weapon
+                        if(currentObjects[ctr].leaf == 3){
+                            weaponRemove(currentObjects[ctr]);
+                            updateWeapon(3);
+                        }
+                     }
 				}        
 				if (!willCollide)
                 {
                 	x += speed; 
                 	player.cameraX += speed ;
+                }
+            }
+            weaponRemove = (obj) =>{
+                rtree.remove({x: obj.x, y: obj.y, w: obj.w, h: obj.h});
+            }
+            updateWeapon = (weaponID) =>{
+                switch(weaponID){
+                case 3:
+                    userArray[ID-1].weapons["SRW"] = true;
+
+                break;
                 }
             }
             rtree.remove({x: oldX, y: oldY, w: playerSquareDimensions, h: playerSquareDimensions});
@@ -257,8 +306,8 @@ startup = () => {
            	emitObjects = emitObjects.concat(rtree.search({x:player.cameraX,y:player.cameraY,w:player.canvasWidth,h:player.canvasHeight},true));
             //console.log(rtree.search({x:player.cameraX,y:player.cameraY,w:player.canvasWidth,h:player.canvasHeight},true));
             userArray[ID-1].currentObjects = emitObjects.slice();
-           
-            socket.emit('MapGen', {ObjectList : emitObjects,  UserPositionX : x, UserPositionY : y, curId : ID});
+            console.log(userArray[ID-1].weapons)
+            socket.emit('MapGen', {ObjectList : emitObjects,  UserPositionX : x, UserPositionY : y, curId : ID, weapons : userArray[ID-1].weapons});
             // console.log('Emitted.', emitObjects.length);
 		});
 
