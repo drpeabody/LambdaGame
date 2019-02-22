@@ -94,7 +94,8 @@
 	var initCameraY ;
 	canvas = document.getElementById("fuckyou");
 	var ctx = canvas.getContext('2d');
-	var imageUrls = [];
+	var imageUrls = {};
+	var images = {};
 	imageUrls['tree']='https://res.cloudinary.com/do3uy82tk/image/upload/v1550645217/output-onlinepngtools.png';
 	imageUrls['grass']='https://res.cloudinary.com/do3uy82tk/image/upload/v1550772946/grass_block_top_n.png';
 	imageUrls['rock']='https://res.cloudinary.com/do3uy82tk/image/upload/v1550657582/Rock.png';
@@ -113,7 +114,10 @@
 	imageUrls['playerMoveLeft2']='https://res.cloudinary.com/do3uy82tk/image/upload/v1550786136/leftrunright.png';
 	imageUrls['playerMoveRight2']='https://res.cloudinary.com/do3uy82tk/image/upload/v1550786120/rightrunright.png';
 	imageUrls['playerMoveDown2']='https://res.cloudinary.com/do3uy82tk/image/upload/v1550786299/downwalkright.png';
-
+	for (var key in imageUrls) {
+		images[key] = new Image();
+		images[key].src = key ; 
+	}
 	var player = null;
 	var hasCameraChangedEver = false ;
 	function User(x,y,cameraX, cameraY)
@@ -244,13 +248,13 @@
 						switch(data.ObjectList[i].leaf)
 						{
 							case -1:
-								ctx.drawImage(grass, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
+								ctx.drawImage(images['grass'], data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
 							break ;
 							case 1 :
-								ctx.drawImage(rock, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
+								ctx.drawImage(images['rock'], data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
 							break;
 							case 2 :
-								ctx.drawImage(tree, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
+								ctx.drawImage(images['tree'], data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
 							break ;
 							case 3:
 								ctx.fillStyle = "#111144";
@@ -265,46 +269,13 @@
 			    // 				ctx.fillRect(data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y - player.cameraY, data.ObjectList[i].w, data.ObjectList[i].h);
 							// 	break ;
 							case 6:
-								ctx.drawImage(snow, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
+								ctx.drawImage(images['snow'], data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
 							break ;
 							case 7:
-								ctx.drawImage(sand, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
+								ctx.drawImage(images['sand'], data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
 							break ;
 							case 11:
-								ctx.drawImage(player11, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
-							break ;
-							case 12:
-								ctx.drawImage(player12, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
-							break ;
-							case 13:
-								ctx.drawImage(player13, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
-							break ;
-							case 14:
-								ctx.drawImage(player14, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
-							break ;
-							case 15:
-								ctx.drawImage(player15, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
-							break ;
-							case 16:
-								ctx.drawImage(player16, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
-							break ;
-							case 17:
-								ctx.drawImage(player17, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
-							break ;
-							case 18:
-								ctx.drawImage(player18, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
-							break ;
-							case 19:
-								ctx.drawImage(player19, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
-							break ;
-							case 20:
-								ctx.drawImage(player20, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
-							break ;
-							case 21:
-								ctx.drawImage(player21, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
-							break ;
-							case 22:
-								ctx.drawImage(player22, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
+								ctx.drawImage(images['playerStandFront'], data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
 							break ;
 						}
 
