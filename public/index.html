@@ -80,7 +80,7 @@
 		httpRequest.send(JSON.stringify(data));
 		return httpRequest;
 	}
-	url = 'http://192.168.0.104:8080';
+	url = 'http://localhost:8080';
 
 	var hasAskedOnce = false;
 	var playerSquareSize = 30;
@@ -282,53 +282,14 @@
 								ctx.fillStyle = "#111144";
 								ctx.fillRect(data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y - player.cameraY, data.ObjectList[i].w, data.ObjectList[i].h);
 							break;
-							case 4:
-								ctx.fillStyle = ctx.createPattern(water,'repeat');
-								
-								if (initCameraX - player.cameraX != 0)
-								{
-									ctx.save();
-									ctx.translate((initCameraX-player.cameraX),0);
-				    				ctx.fillRect(data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y - player.cameraY, data.ObjectList[i].w, data.ObjectList[i].h);
-				    				ctx.restore();
-
-								}
-								else
-								{
-									ctx.fillRect(data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y - player.cameraY, data.ObjectList[i].w, data.ObjectList[i].h);
-								}
-								if (initCameraY - player.cameraY != 0)
-								{
-									ctx.save();
-									ctx.translate(0,(500-initCameraY-player.cameraY));
-				    				ctx.fillRect(data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y - player.cameraY, data.ObjectList[i].w, data.ObjectList[i].h);
-				    				ctx.restore();
-
-								}
-							break ;
-							case 5:
-								ctx.fillStyle = ctx.createPattern(water,'repeat');
-								if (initCameraY - player.cameraY != 0)
-								{
-									ctx.save();
-									ctx.translate(0,(initCameraY-player.cameraY));
-				    				ctx.fillRect(data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y - player.cameraY, data.ObjectList[i].w, data.ObjectList[i].h);
-				    				ctx.restore();
-
-								}
-								else
-								{
-									ctx.fillRect(data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y - player.cameraY, data.ObjectList[i].w, data.ObjectList[i].h);
-								}
-								if (initCameraX - player.cameraX != 0)
-								{
-									ctx.save();
-									ctx.translate((initCameraX-player.cameraX-1000),0);
-				    				ctx.fillRect(data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y - player.cameraY, data.ObjectList[i].w, data.ObjectList[i].h);
-				    				ctx.restore();
-
-								}
-							break ;
+							case 4 || 5:
+								ctx.fillStyle = '#000';
+								ctx.fillRect(data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y - player.cameraY, data.ObjectList[i].w, data.ObjectList[i].h);
+								break ;
+							// case 5:
+							// 	ctx.fillStyle ='#000';
+			    // 				ctx.fillRect(data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y - player.cameraY, data.ObjectList[i].w, data.ObjectList[i].h);
+							// 	break ;
 							case 6:
 								ctx.drawImage(snow, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
 							break ;

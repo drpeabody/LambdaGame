@@ -43,7 +43,9 @@ var higherRangeDimensionDesertBiomes = 55000 ;
 // end
 
 module.exports = {
-	MapGen: function() {		
+	MapGen: function() {
+
+    	console.time("Generating-map");
 		// Generate rocks at random locations
 		for (var i = 1 ; i <= size ; i++)
 		{
@@ -109,5 +111,8 @@ module.exports = {
 				h: 45000
 			},7);
 		}
+
+	    console.timeEnd("Generating-map");
+	    console.log("Generation Done");
 	}
 };
