@@ -256,13 +256,13 @@
 					switch(obj.leaf)
 					{
 						case -1:
-							ctx.drawImage(grass, x, y);
+							ctx.drawImage(images['grass'], x, y);
 						break ;
 						case 1 :
-							ctx.drawImage(rock, x, y);
+							ctx.drawImage(images['rock'], x, y);
 						break;
 						case 2 :
-							ctx.drawImage(tree, x, y);
+							ctx.drawImage(images['tree'], x, y);
 						break ;
 						case 3:
 							ctx.fillStyle = "#111144";
@@ -277,14 +277,13 @@
 							ctx.fillRect(x, y, obj.w, obj.h);
 							break ;
 						case 6:
-							ctx.drawImage(snow, x, y);
+							ctx.drawImage(images['snow'], x, y);
 						break ;
 						case 7:
-							ctx.drawImage(sand, x, y);
+							ctx.drawImage(images['sand'], x, y);
 						break ;
 						case 11:
-							var img = player11;
-							ctx.drawImage(img, x, y);
+							ctx.drawImage(images['playerStandFront'], x, y);
 							break ;
 					}
 				}
