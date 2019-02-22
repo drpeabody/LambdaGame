@@ -200,8 +200,8 @@
     // 				initCameraY = player.cameraY ;	
     // 				hasCameraChangedEver = true;
 				// }
-				var ptrn = ctx.createPattern(images['grass'], 'repeat'); // Create a pattern with this image, and set it to "repeat".
-				ctx.fillStyle = ptrn;
+				// var ptrn = ctx.createPattern(images['grass'], 'repeat'); // Create a pattern with this image, and set it to "repeat".
+				// ctx.fillStyle = ptrn;
 				// ctx.fillRect(0,0,canvas.width,canvas.height);
 				// ctx.save();
     // 			ctx.translate(player.cameraX, player.cameraY);
@@ -209,7 +209,7 @@
     			var i = Math.floor(player.x / canvas.width) - 1;
     			var j = Math.floor(player.y / canvas.height) - 1;
 
-    			ctx.fillRect(i * canvas.width, j * canvas.height, 3*canvas.width, 3*canvas.height);
+    			ctx.drawImage(images['grass'], i * canvas.width - player.cameraX, j * canvas.height - player.cameraY, canvas.width, canvas.height);
     			// ctx.translate(0, 0);
     			// ctx.restore();
     			
