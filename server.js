@@ -5,11 +5,18 @@ const stdin = process.openStdin();
 var fs = require('fs');
 var mongo = require('./mongo.js');
 const RTree = require("rtree")
+const Map = require("./MapGeneration")
 var userArray = [];
 
-
+function wait(ms) {
+    var start = Date.now(),
+        now = start;
+    while (now - start < ms) {
+      now = Date.now();
+    }
+}
 var mapSquareSize = 2000000 ;
-var playerSquareDimension = 50 ;
+var playerSquareDimension = 30 ;
 var playerSquareDimensions = playerSquareDimension ;
 var MapSize = mapSquareSize ;
 function User(userName, userHash, x, y)
@@ -23,7 +30,10 @@ function User(userName, userHash, x, y)
     	b : playerSquareDimension,
         color : "#441111",
         currentObjects : [],
-        weapons : []   
+        weapons : [],
+        userState : 11,   
+        baseState : 11,
+        whichFoot : true // true for right, false for left
     }
 }
 
@@ -31,45 +41,31 @@ function User(userName, userHash, x, y)
 /*
 	RTREE Type Chart :
     -1 : Grass
-	 0 : Player
 	 1 : Rock
 	 2 : Tree
      3 : Short Range Weapon
+     11 : Player facing straight
+     12 : Player facing left
+     13 : Player facing right
+     14 : Player facing down
+     15 : Player running front with left leg
+     16 : Player running front with right leg
+     17 : Player running left with left leg
+     18 : Player running left with right leg
+     19 : Player running right with left leg
+     20 : Player running right with right leg
+     21 : Player running down with left leg
+     22 : Player running down with right leg
 */
 
 
-var rtree = RTree(100);
+global.rtree = RTree(100);
 var size = 1000000;
 var noOfSRWOnMap = 3000000; //SRW = Short Range Weapons
 const wSRW = 30;
 const hSRW = 30;
 console.time("Generating-map");
-for (var i = 1 ; i <= size ; i++)
-{
-    rtree.insert({
-    	x: Math.floor(Math.random() * (mapSquareSize)) + 0,
-    	y: Math.floor(Math.random() * (mapSquareSize)) + 0,
-    	w: 50,
-    	h: 50
-    },1);
-}
-for (var i = 1 ; i <= size ; i++)
-{
-    rtree.insert({
-        x: Math.floor(Math.random() * (mapSquareSize)) + 0,
-        y: Math.floor(Math.random() * (mapSquareSize)) + 0,
-        w: 50,
-        h: 50
-    },2);
-}
-for(var i = 1; i <= noOfSRWOnMap; i++){
-    rtree.insert({
-        x: Math.floor(Math.random() * (mapSquareSize)) + 0,
-        y: Math.floor(Math.random() * (mapSquareSize)) + 0,
-        w: wSRW,
-        h: hSRW
-    },3);
-}
+Map.MapGen();
 console.timeEnd("Generating-map");
 // listOfObjects = listOfObjects.concat(Array.from({ length: 1 }, () => ({
 //    x: Math.floor(Math.random() * (mapSquareSize)),
@@ -189,8 +185,23 @@ startup = () => {
             y = userArray[ID-1].y;
             var oldX = x ;
             var oldY = y ;
+
+            if (userArray[ID-1].userState == 15 || userArray[ID-1].userState == 16)
+                userArray[ID-1].baseState = 11 ;
+            else if (userArray[ID-1].userState == 17 || userArray[ID-1].userState == 18)
+                userArray[ID-1].baseState = 12 ;
+            else if (userArray[ID-1].userState == 19 || userArray[ID-1].userState == 20)
+                userArray[ID-1].baseState = 13 ;
+            else if (userArray[ID-1].userState == 21 || userArray[ID-1].userState == 22)
+                userArray[ID-1].baseState = 14 ;
+
+            if (!player.bWDown || !player.bADown || !player.bSDown || !player.bDDown)
+                userArray[ID-1].userState = userArray[ID-1].baseState ;
+            
             // Check for collisions
+            console.log(userArray[ID-1].userState0);
             var currentObjects = userArray[ID-1].currentObjects ;
+            var waitDurationMS = 0 ;
 
             if (player.bWDown && (y - speed>= 0)){
                 var willCollide = false ;
@@ -205,11 +216,31 @@ startup = () => {
                             weaponRemove(currentObjects[ctr]);
                             updateWeapon(3);
                         }
+                        if (currentObjects[ctr].leaf == 6 || currentObjects[ctr].leaf == 7)
+                        {
+                            willCollide = false ;
+                        }
                     }
 				}        
 				if (!willCollide)
 				{
                 	y -= speed; player.cameraY -= speed ;
+                    if (userArray[ID-1].userState == 15)
+                    {
+                        userArray[ID-1].userState = 16
+                        console.log("CHECK ITS WORKING");
+                        wait(waitDurationMS);
+                    }
+                    else if (userArray[ID-1].userState == 16)
+                    {
+                        userArray[ID-1].userState = 15 ; 
+                        wait(waitDurationMS);
+                    }
+                    else
+                    {
+                        userArray[ID-1].userState = 15 ;
+                        wait(waitDurationMS);
+                    }
 				}
             }
             if (player.bADown && (x - speed>= 0)){
@@ -225,11 +256,30 @@ startup = () => {
                             weaponRemove(currentObjects[ctr]);
                             updateWeapon(3);
                         }
+                        if (currentObjects[ctr].leaf == 6 || currentObjects[ctr].leaf == 7)
+                        {
+                            willCollide = false ;
+                        }
                      }
 				}        
 				if (!willCollide)
                 {
                 	x -= speed; player.cameraX -= speed ;
+                    if (userArray[ID-1].userState == 17)
+                    {
+                        userArray[ID-1].userState = 18 ;
+                        wait(waitDurationMS);
+                    }
+                    else if (userArray[ID-1].userState == 18)
+                    {
+                        userArray[ID-1].userState = 17 ; 
+                        wait(waitDurationMS);
+                    }
+                    else
+                    {
+                        userArray[ID-1].userState = 17 ;
+                        wait(waitDurationMS);
+                    }
                 }	
             }
             if (player.bSDown && (y + playerSquareDimensions + speed <= MapSize))
@@ -245,12 +295,31 @@ startup = () => {
                             weaponRemove(currentObjects[ctr]);
                             updateWeapon(3);
                         }
+                        if (currentObjects[ctr].leaf == 6 || currentObjects[ctr].leaf == 7)
+                        {
+                            willCollide = false ;
+                        }
                      }
 				}        
 				if (!willCollide)
                 {
                 	y += speed; 
                 	player.cameraY += speed ;
+                    if (userArray[ID-1].userState == 21)
+                    {
+                        userArray[ID-1].userState = 22 ;
+                        wait(waitDurationMS);
+                    }
+                    else if (userArray[ID-1].userState == 22)
+                    {
+                        userArray[ID-1].userState = 21 ; 
+                        wait(waitDurationMS);
+                    }
+                    else
+                    {
+                        userArray[ID-1].userState = 21 ;
+                        wait(waitDurationMS);
+                    }
                 }
             }
             if (player.bDDown && (x + playerSquareDimensions + speed) <= MapSize){ 
@@ -265,12 +334,31 @@ startup = () => {
                             weaponRemove(currentObjects[ctr]);
                             updateWeapon(3);
                         }
+                        if (currentObjects[ctr].leaf == 6 || currentObjects[ctr].leaf == 7)
+                        {
+                            willCollide = false ;
+                        }
                      }
 				}        
 				if (!willCollide)
                 {
                 	x += speed; 
                 	player.cameraX += speed ;
+                    if (userArray[ID-1].userState == 19)
+                    {
+                        userArray[ID-1].userState = 20 ;
+                        wait(waitDurationMS);
+                    }
+                    else if (userArray[ID-1].userState == 20)
+                    {
+                        userArray[ID-1].userState = 19 ; 
+                        wait(waitDurationMS);
+                    }
+                    else
+                    {
+                        userArray[ID-1].userState = 19 ;
+                        wait(waitDurationMS);
+                    }
                 }
             }
             weaponRemove = (obj) =>{
@@ -285,7 +373,7 @@ startup = () => {
                 }
             }
             rtree.remove({x: oldX, y: oldY, w: playerSquareDimensions, h: playerSquareDimensions});
-            rtree.insert({x: x, y: y, w: playerSquareDimensions, h: playerSquareDimensions}, 0);
+            rtree.insert({x: x, y: y, w: playerSquareDimensions, h: playerSquareDimensions}, userArray[ID-1].userState);
             userArray[ID-1].x = x;
             userArray[ID-1].y = y;
 
@@ -306,7 +394,6 @@ startup = () => {
            	emitObjects = emitObjects.concat(rtree.search({x:player.cameraX,y:player.cameraY,w:player.canvasWidth,h:player.canvasHeight},true));
             //console.log(rtree.search({x:player.cameraX,y:player.cameraY,w:player.canvasWidth,h:player.canvasHeight},true));
             userArray[ID-1].currentObjects = emitObjects.slice();
-            console.log(userArray[ID-1].weapons)
             socket.emit('MapGen', {ObjectList : emitObjects,  UserPositionX : x, UserPositionY : y, curId : ID, weapons : userArray[ID-1].weapons});
             // console.log('Emitted.', emitObjects.length);
 		});
@@ -333,9 +420,9 @@ startup = () => {
     		// Make mongoDB account. 
     		console.log("Logging in");
 
-    		var user = new User(data.id, hash, Math.floor(Math.random() * (mapSquareSize- playerSquareDimension )) + 0, Math.floor(Math.random() * (mapSquareSize - playerSquareDimension)) + 0);
+    		// var user = new User(data.id, hash, Math.floor(Math.random() * (mapSquareSize- playerSquareDimension )) + 0, Math.floor(Math.random() * (mapSquareSize - playerSquareDimension)) + 0);
     		// var user = new User(data.id, hash, Math.floor(Math.random() * (1000000 -  999000)) + 999000, Math.floor(Math.random() * (1000000 -  999000)) + 999000);
-    		// var user = User(data.id, hash, 99500,99500);
+    		 var user = User(data.id, hash, 1000,1000);
     		var curId = userArray.push(user);
 
     		console.log("### CURRENT USER DETAILS : USER #" + (curId+1) + " ###");
@@ -348,7 +435,7 @@ startup = () => {
     			y: user.y,
     			w: playerSquareDimension,
     			h: playerSquareDimension
-    		},0);
+    		},11);
     		//emitMap(user, curId);
             socket.emit('UserId', {x:user.x, y:user.y, ID:curId});
 		});

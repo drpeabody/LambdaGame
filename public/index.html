@@ -80,10 +80,10 @@
 		httpRequest.send(JSON.stringify(data));
 		return httpRequest;
 	}
-	url = 'http://localhost:8080';
+	url = 'http://192.168.0.104:8080';
 
 	var hasAskedOnce = false;
-	var playerSquareSize = 50;
+	var playerSquareSize = 30;
 	var wSRW = 30;
 	var hSRW = 30;
 	var correctionFactor = 0.95 ;
@@ -93,14 +93,53 @@
 	var initCameraX ;
 	var initCameraY ;
 	canvas = document.getElementById("fuckyou");
+	var ctx = canvas.getContext('2d');
+	var verticalGradient = ctx.createLinearGradient(0,0,0,1000);
+	verticalGradient.addColorStop(0,'#003366');
+	verticalGradient.addColorStop(1,'#add8e6');
 	//Create Image object
 	var tree = new Image();
 	//Finally, start the loading process
 	tree.src = 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550645217/output-onlinepngtools.png';
 	var grass = new Image();
-	grass.src = 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550690972/2000Grass.png';
+	grass.src = 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550772946/grass_block_top_n.png';
 	var rock = new Image();
 	rock.src = 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550657582/Rock.png';
+	var water = new Image();
+	water.src = 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550772947/WATER2.png';
+	var snow = new Image();
+	snow.src = 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550781217/snow.png';
+	var sand = new Image();
+	sand.src = 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550772947/sand.png';
+	// I was half-asleep while writing this
+	// To do : Put whole thing (all image import links into a seperate file)
+	// and initialize an image array
+	// And load each of them from file
+	var player11 = new Image();
+	player11.src = 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550785864/Lookup.png';
+	var player12 = new Image();
+	player12.src = 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550786463/lookleft.png';
+	var player13 = new Image();
+	player13.src = 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550785864/Lookright.png';
+	var player14 = new Image();
+	player14.src = 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550786299/downstand.png';
+	var player15 = new Image();
+	player15.src = 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550786690/uprunleft.png';
+	var player16 = new Image();
+	player16.src = 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550786690/uprunright.png';
+	var player17 = new Image();
+	player17.src = 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550786120/leftrunleft.png';
+	var player18 = new Image();
+	player18.src = 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550786136/leftrunright.png';
+	var player19 = new Image();
+	player19.src = 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550786137/rightrunleft.png';
+	var player20 = new Image();
+	player20.src = 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550786120/rightrunright.png';
+	var player21 = new Image();
+	player21.src = 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550786299/downwalkleft.png';
+	var player22 = new Image();
+	player22.src = 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550786299/downwalkright.png';
+
 	var player = null;
 	var hasCameraChangedEver = false ;
 	function User(x,y,cameraX, cameraY)
@@ -131,7 +170,7 @@
 			elem.parentNode.removeChild(elem);
             player = User(plr.x, plr.y, plr.cameraX, plr.cameraY);
             canvas = document.getElementById("fuckyou");
-			ctx = canvas.getContext('2d');
+			
 			canvas.width = window.innerWidth * correctionFactor;
 			canvas.height = window.innerHeight * correctionFactor;
             curId = plr.ID ;
@@ -187,14 +226,10 @@
 				ctx.fillStyle = ptrn;
 				// ctx.fillRect(0,0,canvas.width,canvas.height);
 				ctx.save();
-    			ctx.translate(initCameraX-player.cameraX, initCameraY-player.cameraY);
-    			ctx.fillRect(-2000000, -2000000, 100000000,100000000);
+    			ctx.translate((initCameraX-player.cameraX), (initCameraY-player.cameraY));
+    			ctx.fillRect(0, 0, 100000000,100000000);
     			ctx.restore();
-    			if (player.cameraX - initCameraX == 0 && player.cameraY - initCameraY == 0)
-    			{
-    				initCameraX = player.cameraX ;
-    				initCameraY = player.cameraY ;	
-    			}
+    			
 				// if (player.cameraX < 0 )
 				// {
 				// 	ctx.fillStyle = "#000000";
@@ -215,8 +250,6 @@
 				// 	ctx.fillStyle = "#000000";
 				// 	ctx.fillRect(MapSize - player.cameraX, 0, canvas.width - (MapSize - player.cameraX), canvas.height);
 				// }
-				ctx.fillStyle = "#441111";
-				ctx.fillRect((canvas.width- playerSquareDimensions )/2, (canvas.height- playerSquareDimensions )/2, playerSquareDimensions, playerSquareDimensions);
 				////////////////////////////FOR SRW
 				if(data.weapons["SRW"]){
 					console.log("I got the power.")
@@ -239,10 +272,6 @@
 							case -1:
 								ctx.drawImage(grass, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
 							break ;
-							case 0: 
-								ctx.fillStyle = "#441111";
-								ctx.fillRect(data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y - player.cameraY, data.ObjectList[i].w, data.ObjectList[i].h);
-							break ;
 							case 1 :
 								ctx.drawImage(rock, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
 							break;
@@ -253,13 +282,106 @@
 								ctx.fillStyle = "#111144";
 								ctx.fillRect(data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y - player.cameraY, data.ObjectList[i].w, data.ObjectList[i].h);
 							break;
-						
+							case 4:
+								ctx.fillStyle = ctx.createPattern(water,'repeat');
+								
+								if (initCameraX - player.cameraX != 0)
+								{
+									ctx.save();
+									ctx.translate((initCameraX-player.cameraX),0);
+				    				ctx.fillRect(data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y - player.cameraY, data.ObjectList[i].w, data.ObjectList[i].h);
+				    				ctx.restore();
+
+								}
+								else
+								{
+									ctx.fillRect(data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y - player.cameraY, data.ObjectList[i].w, data.ObjectList[i].h);
+								}
+								if (initCameraY - player.cameraY != 0)
+								{
+									ctx.save();
+									ctx.translate(0,(500-initCameraY-player.cameraY));
+				    				ctx.fillRect(data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y - player.cameraY, data.ObjectList[i].w, data.ObjectList[i].h);
+				    				ctx.restore();
+
+								}
+							break ;
+							case 5:
+								ctx.fillStyle = ctx.createPattern(water,'repeat');
+								if (initCameraY - player.cameraY != 0)
+								{
+									ctx.save();
+									ctx.translate(0,(initCameraY-player.cameraY));
+				    				ctx.fillRect(data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y - player.cameraY, data.ObjectList[i].w, data.ObjectList[i].h);
+				    				ctx.restore();
+
+								}
+								else
+								{
+									ctx.fillRect(data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y - player.cameraY, data.ObjectList[i].w, data.ObjectList[i].h);
+								}
+								if (initCameraX - player.cameraX != 0)
+								{
+									ctx.save();
+									ctx.translate((initCameraX-player.cameraX-1000),0);
+				    				ctx.fillRect(data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y - player.cameraY, data.ObjectList[i].w, data.ObjectList[i].h);
+				    				ctx.restore();
+
+								}
+							break ;
+							case 6:
+								ctx.drawImage(snow, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
+							break ;
+							case 7:
+								ctx.drawImage(sand, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
+							break ;
+							case 11:
+								ctx.drawImage(player11, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
+							break ;
+							case 12:
+								ctx.drawImage(player12, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
+							break ;
+							case 13:
+								ctx.drawImage(player13, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
+							break ;
+							case 14:
+								ctx.drawImage(player14, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
+							break ;
+							case 15:
+								ctx.drawImage(player15, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
+							break ;
+							case 16:
+								ctx.drawImage(player16, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
+							break ;
+							case 17:
+								ctx.drawImage(player17, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
+							break ;
+							case 18:
+								ctx.drawImage(player18, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
+							break ;
+							case 19:
+								ctx.drawImage(player19, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
+							break ;
+							case 20:
+								ctx.drawImage(player20, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
+							break ;
+							case 21:
+								ctx.drawImage(player21, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
+							break ;
+							case 22:
+								ctx.drawImage(player22, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
+							break ;
 						}
 
 						
 					}
 					
 				}
+				if (player.cameraX - initCameraX == 0 && player.cameraY - initCameraY == 0)
+    			{
+    				initCameraX = player.cameraX ;
+    				initCameraY = player.cameraY ;	
+    			}
 				//update();
 			}
 			update = () => {
