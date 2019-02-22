@@ -11,7 +11,6 @@
 	 7 : Desert (Centre Block)
 */
 
-var widthOfWater = 1000 ;
 var size = 1000000;
 var noOfSRWOnMap = 3000000; //SRW = Short Range Weapons
 const wSRW = 30;
@@ -25,8 +24,8 @@ var MapSize = mapSquareSize ;
 These variables define the area of the map over which biomes can be randomly generated. 
 They do not generate over water. 
 */
-var lower = widthOfWater ;
-var upper = mapSquareSize - widthOfWater ; 
+var lower = 0 ;
+var upper = mapSquareSize; 
 
 /* end */
 
@@ -77,18 +76,18 @@ module.exports = {
 		}
 		// Generate water around the map
 
-		rtree.insert({
-			x: 0,
-			y: 0,
-			w: mapSquareSize,
-			h: widthOfWater
-		},4);
-		rtree.insert({
-			x: 0,
-			y: 0,
-			w: widthOfWater,
-			h: mapSquareSize
-		},5);
+		// rtree.insert({
+		// 	x: 0,
+		// 	y: 0,
+		// 	w: mapSquareSize,
+		// 	h: widthOfWater
+		// },4);
+		// rtree.insert({
+		// 	x: 0,
+		// 	y: 0,
+		// 	w: widthOfWater,
+		// 	h: mapSquareSize
+		// },5);
 		// Generate snow biomes around the map
 		for (var i = 1 ; i <= 1 ; i++)
 		{

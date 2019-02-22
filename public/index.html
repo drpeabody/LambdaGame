@@ -90,8 +90,8 @@
 	var playerSquareDimensions = playerSquareSize ;
 	var MapSize = 1000000 ;
 	var curId;
-	var initCameraX ;
-	var initCameraY ;
+	// var initCameraX ;
+	// var initCameraY ;
 	canvas = document.getElementById("fuckyou");
 	var ctx = canvas.getContext('2d');
 	var verticalGradient = ctx.createLinearGradient(0,0,0,1000);
@@ -141,7 +141,7 @@
 	player22.src = 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550786299/downwalkright.png';
 
 	var player = null;
-	var hasCameraChangedEver = false ;
+	// var hasCameraChangedEver = false ;
 	function User(x,y,cameraX, cameraY)
 {
 	return {
@@ -216,19 +216,24 @@
 				// 	}
 				// }
 				////Code duplication here should be fixed!!!!!
-				if (!hasCameraChangedEver)
-				{
-					initCameraX = player.cameraX ;
-    				initCameraY = player.cameraY ;	
-    				hasCameraChangedEver = true;
-				}
+				// if (!hasCameraChangedEver)
+				// {
+				// 	initCameraX = player.cameraX ;
+    // 				initCameraY = player.cameraY ;	
+    // 				hasCameraChangedEver = true;
+				// }
 				var ptrn = ctx.createPattern(grass, 'repeat'); // Create a pattern with this image, and set it to "repeat".
 				ctx.fillStyle = ptrn;
 				// ctx.fillRect(0,0,canvas.width,canvas.height);
-				ctx.save();
-    			ctx.translate((initCameraX-player.cameraX), (initCameraY-player.cameraY));
-    			ctx.fillRect(0, 0, 100000000,100000000);
-    			ctx.restore();
+				// ctx.save();
+    // 			ctx.translate(player.cameraX, player.cameraY);
+
+    			var i = Math.floor(player.x / canvas.width) - 1;
+    			var j = Math.floor(player.y / canvas.height) - 1;
+
+    			ctx.fillRect(i * canvas.width, j * canvas.height, 3*canvas.width, 3*canvas.height);
+    			// ctx.translate(0, 0);
+    			// ctx.restore();
     			
 				// if (player.cameraX < 0 )
 				// {
@@ -260,89 +265,56 @@
 
 				// ctx.fillStyle = "#111199";
 				// ctx.fillRect(tree.x - player.x, tree.y - player.y, 20, 20);
-				for (var i = 0 ; i < data.ObjectList.length ; i++)
+				// for (var i = 0 ; i < data.ObjectList.length ; i++)
+
+				for(var obj of data.ObjectList)
 				{
 
-					// if (data.ObjectList[i].x >= player.cameraX && data.ObjectList[i].x <= (player.cameraX + canvas.width) && data.ObjectList[i].y >= player.cameraY && data.ObjectList[i].y <= (player.cameraY + canvas.height))
-					{
-						
-						console.log("Here");
-						switch(data.ObjectList[i].leaf)
-						{
-							case -1:
-								ctx.drawImage(grass, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
-							break ;
-							case 1 :
-								ctx.drawImage(rock, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
-							break;
-							case 2 :
-								ctx.drawImage(tree, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
-							break ;
-							case 3:
-								ctx.fillStyle = "#111144";
-								ctx.fillRect(data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y - player.cameraY, data.ObjectList[i].w, data.ObjectList[i].h);
-							break;
-							case 4 || 5:
-								ctx.fillStyle = '#000';
-								ctx.fillRect(data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y - player.cameraY, data.ObjectList[i].w, data.ObjectList[i].h);
-								break ;
-							// case 5:
-							// 	ctx.fillStyle ='#000';
-			    // 				ctx.fillRect(data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y - player.cameraY, data.ObjectList[i].w, data.ObjectList[i].h);
-							// 	break ;
-							case 6:
-								ctx.drawImage(snow, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
-							break ;
-							case 7:
-								ctx.drawImage(sand, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
-							break ;
-							case 11:
-								ctx.drawImage(player11, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
-							break ;
-							case 12:
-								ctx.drawImage(player12, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
-							break ;
-							case 13:
-								ctx.drawImage(player13, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
-							break ;
-							case 14:
-								ctx.drawImage(player14, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
-							break ;
-							case 15:
-								ctx.drawImage(player15, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
-							break ;
-							case 16:
-								ctx.drawImage(player16, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
-							break ;
-							case 17:
-								ctx.drawImage(player17, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
-							break ;
-							case 18:
-								ctx.drawImage(player18, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
-							break ;
-							case 19:
-								ctx.drawImage(player19, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
-							break ;
-							case 20:
-								ctx.drawImage(player20, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
-							break ;
-							case 21:
-								ctx.drawImage(player21, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
-							break ;
-							case 22:
-								ctx.drawImage(player22, data.ObjectList[i].x - player.cameraX, data.ObjectList[i].y-player.cameraY);
-							break ;
-						}
+					// var obj = data.ObjectList[i];
+					console.log("Here");
 
-						
+					var x = obj.x - player.cameraX;
+					var y = obj.y - player.cameraY;
+					switch(obj.leaf)
+					{
+						case -1:
+							ctx.drawImage(grass, x, y);
+						break ;
+						case 1 :
+							ctx.drawImage(rock, x, y);
+						break;
+						case 2 :
+							ctx.drawImage(tree, x, y);
+						break ;
+						case 3:
+							ctx.fillStyle = "#111144";
+							ctx.fillRect(x, y, obj.w, obj.h);
+						break;
+						case 4:
+							ctx.fillStyle = '#000';
+							ctx.fillRect(x, y, obj.w, obj.h);
+							break ;
+						case 5:
+							ctx.fillStyle = '#000';
+							ctx.fillRect(x, y, obj.w, obj.h);
+							break ;
+						case 6:
+							ctx.drawImage(snow, x, y);
+						break ;
+						case 7:
+							ctx.drawImage(sand, x, y);
+						break ;
+						case 11:
+							var img = player11;
+							ctx.drawImage(img, x, y);
+							break ;
 					}
-					
 				}
-				if (player.cameraX - initCameraX == 0 && player.cameraY - initCameraY == 0)
-    			{
-    				initCameraX = player.cameraX ;
-    				initCameraY = player.cameraY ;	
-    			}
+				// if (player.cameraX - initCameraX == 0 && player.cameraY - initCameraY == 0)
+    // 			{
+    // 				initCameraX = player.cameraX ;
+    // 				initCameraY = player.cameraY ;	
+    // 			}
 				//update();
 			}
 			update = () => {
