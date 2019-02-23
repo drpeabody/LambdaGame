@@ -7,6 +7,7 @@ var mongo = require('./mongo.js');
 const RTree = require("rtree")
 const Map = require("./MapGeneration")
 var userArray = [];
+var clientSockets = [];
 
 function wait(ms) {
     var start = Date.now(),
@@ -118,6 +119,25 @@ function handler (req, res) {
 	});
 }
 
+insertUser = (username, hash, socket) => {
+    var user = User(username, hash, 1000,1000);
+    var curId = userArray.push(user);
+
+    console.log("### CURRENT USER DETAILS : USER #" + (curId+1) + " ###");
+    console.log("Username = " + user.userName);
+    console.log("Hash = " + user.userHash); 
+    console.log("UserPositionX = " + user.x);
+    console.log("UserPositionY = " + user.y);
+    rtree.insert({
+        x: user.x,
+        y: user.y,
+        w: playerSquareDimension,
+        h: playerSquareDimension
+    },11);
+
+    socket.emit('UserId', {x:user.x, y:user.y, ID:curId});
+}
+
 startup = () => {
 	console.log('Attempting to Start Mongo Server');
 
@@ -140,9 +160,22 @@ startup = () => {
 	app.listen(8080);
 
 	// io.origins('*:*');
+
+    io.use((socket, next) => {
+        var hash = socket.request._query['hash'];
+        var username = socket.request._query['name'];
+        console.log("middleware:", hash, username);
+
+        insertUser(username, hash, socket);
+
+        clientSockets[hash] = socket;
+        next();
+    });
+
 	io.on('connection', function (socket) {
 		console.log('Connected');
 		socket.on('UpdateCoords', function(player) {
+            player = player;
 			emitObjects = [];
             // console.log(player);
 			var ID = player.ID;
@@ -354,29 +387,14 @@ startup = () => {
             // console.log('Emitted.', emitObjects.length);
 		});
 
-		socket.on('Username', function (data) {
-			
-    		var user = User(data.id, '', 1000,1000);
-    		var curId = userArray.push(user);
-
-    		console.log("### CURRENT USER DETAILS : USER #" + (curId+1) + " ###");
-    		console.log("Username = " + user.userName);
-    		console.log("Hash = " + user.userHash);	
-    		console.log("UserPositionX = " + user.x);
-    		console.log("UserPositionY = " + user.y);
-    		rtree.insert({
-    			x: user.x ,
-    			y: user.y,
-    			w: playerSquareDimension,
-    			h: playerSquareDimension
-    		},11);
-    		//emitMap(user, curId);
-            socket.emit('UserId', {x:user.x, y:user.y, ID:curId});
-		});
 	});
 
-    console.log('Server Started');
-	console.log('Implement User Logout on Disconnect');
+    console.log('Server Started\n\n');
+    console.log('Implement User Logout on Disconnect');
+    console.log('Removing and reinserting on RTrees?');
+    console.log('Somebody move the collision to rely on the rTree.');
+	console.log('Resolve update() -> "UpdateCoords" -> "MapGen" -> draw()');
+    console.log("Handle Invalid Hash and Usernames by implementing auth function.\n\n");
 
 }
 
