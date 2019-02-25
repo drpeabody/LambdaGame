@@ -117,6 +117,35 @@
 		images[key].src = imageUrls[key] ; 
 	}
 	var player = null;
+	var localPlayer = {
+		dir: 'Down', // One of ['L', 'R', 'F', 'D']
+		framesPerImage: 12,
+		frameCounter: 0,
+		imgState: 1, // Keeps switching between 1 and 2
+		count: (plr) => {
+			if(plr.bDDown) localPlayer.dir = 'Right';
+			if(plr.bWDown) localPlayer.dir = 'Front';
+			if(plr.bSDown) localPlayer.dir = 'Down';
+			if(plr.bADown) localPlayer.dir = 'Left';
+
+			if(plr.bDDown || plr.bWDown || plr.bSDown || plr.bADown){
+				if(localPlayer.frameCounter > localPlayer.framesPerImage){
+					localPlayer.frameCounter = 0;
+					if(localPlayer.imgState === 1) localPlayer.imgState ++;
+					else localPlayer.imgState --;
+				}
+				else 
+					localPlayer.frameCounter ++;
+			}
+		},
+		getImage: (plr) => {
+			var moving = plr.bDDown || plr.bWDown || plr.bSDown || plr.bADown;
+			if(moving){
+				return images['playerMove' + localPlayer.dir + String(localPlayer.imgState)];
+			}
+			else return images['playerStand' + localPlayer.dir];
+		}
+	}
 
 	function User(x,y,cameraX, cameraY, id, width, height)	{
 		return {
@@ -234,7 +263,7 @@
 						ctx.drawImage(images['sand'], x, y);
 					break ;
 					case 11:
-						ctx.drawImage(images['playerStandFront'], x, y);
+						ctx.drawImage(localPlayer.getImage(player), x, y);
 						break ;
 				}
 			}
@@ -245,6 +274,7 @@
 			//Process input
 
 			socket.emit('UpdateCoords', player);
+			localPlayer.count(player);
 			
 			
 			requestAnimationFrame(update);
