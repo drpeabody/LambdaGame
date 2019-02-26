@@ -9,13 +9,6 @@ const Map = require("./MapGeneration")
 var userArray = [];
 var clientSockets = [];
 
-function wait(ms) {
-    var start = Date.now(),
-        now = start;
-    while (now - start < ms) {
-      now = Date.now();
-    }
-}
 var mapSquareSize = 2000000 ;
 var playerSquareDimension = 30 ;
 var playerSquareDimensions = playerSquareDimension ;
