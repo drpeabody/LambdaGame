@@ -5,7 +5,7 @@ const stdin = process.openStdin();
 var fs = require('fs');
 var mongo = require('./mongo.js');
 const RTree = require("rtree")
-const Map = require("./MapGeneration")
+const Map = require("./MapGenTest")
 var userArray = [];
 var clientSockets = [];
 
