@@ -13,6 +13,30 @@ var mapSquareSize = 2000000 ;
 var playerSquareDimension = 30 ;
 var playerSquareDimensions = playerSquareDimension ;
 var MapSize = mapSquareSize ;
+
+function getDistance(id1,id2)
+{
+    return(Math.sqrt((userArray[id1].x-userArray[id2].x)^2+(userArray[id1].y-userArray[id2].y)^2));
+}
+// naive function rn, replace with better algo
+function findNearestPlayer(ID)
+{
+    var minID = -1 ;
+    var minDist = mapSquareSize ;
+    for (var i = 0 ; i < userArray.length ; i++)
+    {
+        if (i != ID)
+        {
+            if (minDist > getDistance(ID,i))
+            {
+                minDist = getDistance(ID,i) ;
+                minID = i ;
+            }
+        }
+    }
+    return minID ;
+}
+
 function User(userName, userHash, x, y)
 {
 	return {
@@ -25,9 +49,7 @@ function User(userName, userHash, x, y)
         color : "#441111",
         currentObjects : [],
         weapons : [],
-        userState : 11,   
-        baseState : 11,
-        whichFoot : true // true for right, false for left
+        health : 100
     }
 }
 
@@ -195,7 +217,33 @@ startup = () => {
             // Check for collisions
             // console.log(userArray[ID-1].userState0);
             var currentObjects = userArray[ID-1].currentObjects ;
-            // var waitDurationMS = 0 ;
+
+            if (player.mouseDown)
+            {
+                var np = findNearestPlayer(ID-1);
+                var factor = 1 ;
+                if (np >= 0 && userArray[np].health > 0)
+                {
+                    userArray[np].health -= factor ;
+                    if (userArray[np].health <= 0)
+                    {
+                        rtree.remove({x: oldX, y: oldY, w: playerSquareDimensions, h: playerSquareDimensions});
+                        userArray[np] = User(userArray[np].userName, userArray[np].userHash, 1000,1000);
+                        rtree.insert({
+                            x: userArray[np].x,
+                            y: userArray[np].y,
+                            w: playerSquareDimension,
+                            h: playerSquareDimension
+                        },11);          
+                    }
+                }
+                player.mouseDown = false ;
+            }
+            if (userArray[ID-1].health <= 0)
+            {
+                // Remove from rtree
+                socket.emit('UserId', {x:userArray[ID-1].x, y:userArray[ID-1].y, ID:(ID-1)})                
+            }
 
             if (player.bWDown && (y - speed>= 0)){
                 var willCollide = false ;
@@ -372,7 +420,6 @@ startup = () => {
             userArray[ID-1].y = y;
 
             var emitObjects=[];//The list of objects within user's view
-
            	emitObjects = emitObjects.concat(rtree.search({x:player.cameraX,y:player.cameraY,w:player.canvasWidth,h:player.canvasHeight},true));
             //console.log(rtree.search({x:player.cameraX,y:player.cameraY,w:player.canvasWidth,h:player.canvasHeight},true));
             userArray[ID-1].currentObjects = emitObjects.slice();

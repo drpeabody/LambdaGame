@@ -157,6 +157,7 @@
 	        bADown : false ,
 	        bSDown : false ,
 	        bDDown : false ,
+	        mouseDown : false,
 	        ID: id,
 	        canvasWidth: width,
 	        canvasHeight: height
@@ -194,6 +195,14 @@
 				if ((key === 'a')||(key === 'A')) player.bADown = false ;
 				if ((key === 's')||(key === 'S')) player.bSDown = false ;
 				if ((key === 'd')||(key === 'D')) player.bDDown = false ;
+			}
+			document.onmousedown = (e) => {
+				player.mouseDown = true ;
+				console.log("Mouse clicked");
+			}
+			document.onmouseup = (e) => {
+				player.mouseDown = false ;
+				console.log("Mouse clicked");
 			}
 			update();
 
