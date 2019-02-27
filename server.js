@@ -98,6 +98,12 @@ function handler (req, res) {
 			// var username = data.username, pwd = data.pwd;
 			res.writeHead(200, {"Content-Type": "application/json"});
 
+            if(isLoggedIn(username))
+                res.end(JSON.stringify({
+                    status: false,
+                    desc: 'UserName is already Logged in.',
+                }));
+
 			mongo.find('users', data, (docs) => {
 				if(docs.length < 1){
 					res.end(JSON.stringify({
@@ -117,6 +123,14 @@ function handler (req, res) {
 			});
 		}
 	});
+}
+
+authenticate = (socket, hash) => {
+    return (clientSockets[socket.id] === hash);
+}
+
+isLoggedIn = (username) => {
+    return !(!(userArray.find((s) => s.userName === username)));
 }
 
 insertUser = (username, hash, socket) => {
@@ -164,45 +178,48 @@ startup = () => {
     io.use((socket, next) => {
         var hash = socket.request._query['hash'];
         var username = socket.request._query['name'];
-        console.log("middleware:", hash, username);
+        console.log("middleware:", hash, username, socket.id);
 
         insertUser(username, hash, socket);
 
-        clientSockets[hash] = socket;
+        clientSockets[socket.id] = hash;
         next();
-    });
+    }); 
 
 	io.on('connection', function (socket) {
 		console.log('Connected');
+
+        socket.on('disconnect', function () {
+            if(!clientSockets[socket.id]) {
+                console.log('Something has gone wrong, A socket just disconnected that wasnt in' + 
+                    ' the Hash Auth Array. This means we dont have the hash the socket was using, ' +
+                    'worst case, we cant remove this user from the userArray, and he cant ' + 
+                    'login ever again, as the server will report he is already logged in.');
+            }
+            else {
+                userArray.splice(userArray.findIndex((s) => s.userHash === clientSockets[socket.id]), 1);
+                delete clientSockets[socket.id];
+            }
+        });
+
+
 		socket.on('UpdateCoords', function(player) {
+            if(!authenticate(socket, player.hash)){
+                socket.emit('MapGen', {});
+                return;
+            }
+            
             player = player;
 			emitObjects = [];
-            // console.log(player);
 			var ID = player.ID;
             var speed = 5;
-			//userArray[ID-1].x = player.x;
-			//userArray[ID-1].y = player.y;
+
             x = userArray[ID-1].x;
             y = userArray[ID-1].y;
             var oldX = x ;
             var oldY = y ;
 
-            // if (userArray[ID-1].userState == 15 || userArray[ID-1].userState == 16)
-            //     userArray[ID-1].baseState = 11 ;
-            // else if (userArray[ID-1].userState == 17 || userArray[ID-1].userState == 18)
-            //     userArray[ID-1].baseState = 12 ;
-            // else if (userArray[ID-1].userState == 19 || userArray[ID-1].userState == 20)
-            //     userArray[ID-1].baseState = 13 ;
-            // else if (userArray[ID-1].userState == 21 || userArray[ID-1].userState == 22)
-            //     userArray[ID-1].baseState = 14 ;
-
-            // if (!player.bWDown || !player.bADown || !player.bSDown || !player.bDDown)
-            //     userArray[ID-1].userState = userArray[ID-1].baseState ;
-            
-            // Check for collisions
-            // console.log(userArray[ID-1].userState0);
             var currentObjects = userArray[ID-1].currentObjects ;
-            // var waitDurationMS = 0 ;
 
             if (player.bWDown && (y - speed>= 0)){
                 var willCollide = false ;
@@ -226,22 +243,6 @@ startup = () => {
 				if (!willCollide)
 				{
                 	y -= speed; player.cameraY -= speed ;
-                    // if (userArray[ID-1].userState == 15)
-                    // {
-                    //     userArray[ID-1].userState = 16
-                    //     console.log("CHECK ITS WORKING");
-                    //     wait(waitDurationMS);
-                    // }
-                    // else if (userArray[ID-1].userState == 16)
-                    // {
-                    //     userArray[ID-1].userState = 15 ; 
-                    //     wait(waitDurationMS);
-                    // }
-                    // else
-                    // {
-                    //     userArray[ID-1].userState = 15 ;
-                    //     wait(waitDurationMS);
-                    // }
 				}
             }
             if (player.bADown && (x - speed>= 0)){
@@ -266,21 +267,6 @@ startup = () => {
 				if (!willCollide)
                 {
                 	x -= speed; player.cameraX -= speed ;
-                    // if (userArray[ID-1].userState == 17)
-                    // {
-                    //     userArray[ID-1].userState = 18 ;
-                    //     wait(waitDurationMS);
-                    // }
-                    // else if (userArray[ID-1].userState == 18)
-                    // {
-                    //     userArray[ID-1].userState = 17 ; 
-                    //     wait(waitDurationMS);
-                    // }
-                    // else
-                    // {
-                    //     userArray[ID-1].userState = 17 ;
-                    //     wait(waitDurationMS);
-                    // }
                 }	
             }
             if (player.bSDown && (y + playerSquareDimensions + speed <= MapSize))
@@ -306,21 +292,6 @@ startup = () => {
                 {
                 	y += speed; 
                 	player.cameraY += speed ;
-                    // if (userArray[ID-1].userState == 21)
-                    // {
-                    //     userArray[ID-1].userState = 22 ;
-                    //     wait(waitDurationMS);
-                    // }
-                    // else if (userArray[ID-1].userState == 22)
-                    // {
-                    //     userArray[ID-1].userState = 21 ; 
-                    //     wait(waitDurationMS);
-                    // }
-                    // else
-                    // {
-                    //     userArray[ID-1].userState = 21 ;
-                    //     wait(waitDurationMS);
-                    // }
                 }
             }
             if (player.bDDown && (x + playerSquareDimensions + speed) <= MapSize){ 
@@ -345,21 +316,6 @@ startup = () => {
                 {
                 	x += speed; 
                 	player.cameraX += speed ;
-                    // if (userArray[ID-1].userState == 19)
-                    // {
-                    //     userArray[ID-1].userState = 20 ;
-                    //     wait(waitDurationMS);
-                    // }
-                    // else if (userArray[ID-1].userState == 20)
-                    // {
-                    //     userArray[ID-1].userState = 19 ; 
-                    //     wait(waitDurationMS);
-                    // }
-                    // else
-                    // {
-                    //     userArray[ID-1].userState = 19 ;
-                    //     wait(waitDurationMS);
-                    // }
                 }
             }
             weaponRemove = (obj) =>{
@@ -390,11 +346,13 @@ startup = () => {
 	});
 
     console.log('Server Started\n\n');
-    console.log('Implement User Logout on Disconnect');
+    console.log('Implement User kicking by user time out and have a really small timeout like 10s');
+    console.log('Test disconnect Code');
+    // console.log('Implement User Logout on Disconnect');
     console.log('Removing and reinserting on RTrees?');
     console.log('Somebody move the collision to rely on the rTree.');
 	console.log('Resolve update() -> "UpdateCoords" -> "MapGen" -> draw()');
-    console.log("Handle Invalid Hash and Usernames by implementing auth function.\n\n");
+    // console.log("Handle Invalid Hash and Usernames by implementing auth function.\n\n");
 
 }
 

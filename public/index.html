@@ -147,7 +147,7 @@
 		}
 	}
 
-	function User(x,y,cameraX, cameraY, id, width, height)	{
+	function User(x,y,cameraX, cameraY, id, width, height, hash)	{
 		return {
 	        x : x ,
 	        y : y ,
@@ -159,7 +159,8 @@
 	        bDDown : false ,
 	        ID: id,
 	        canvasWidth: width,
-	        canvasHeight: height
+	        canvasHeight: height,
+	        hash: hash
 	    }
 	}
 	var user = null  ;
@@ -175,7 +176,7 @@
 			canvas.width = window.innerWidth * correctionFactor;
 			canvas.height = window.innerHeight * correctionFactor;
 
-            player = User(plr.x, plr.y, plr.cameraX, plr.cameraY, plr.ID, canvas.width, canvas.height);
+            player = User(plr.x, plr.y, plr.cameraX, plr.cameraY, plr.ID, canvas.width, canvas.height, hash);
             // canvas = document.getElementById("fuckyou");
 			
             // curId = plr.ID ;
