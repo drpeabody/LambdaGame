@@ -113,29 +113,32 @@ function handler (req, res) {
 			// var username = data.username, pwd = data.pwd;
 			res.writeHead(200, {"Content-Type": "application/json"});
 
-            if(isLoggedIn(username))
+            if(isLoggedIn(username)){
                 res.end(JSON.stringify({
                     status: false,
                     desc: 'UserName is already Logged in.',
                 }));
-
-			mongo.find('users', data, (docs) => {
-				if(docs.length < 1){
-					res.end(JSON.stringify({
-						status: false,
-						desc: 'Username or Password Incorrect.',
-					}));
-				} else {
-					//Generate User session hash and return for user login auth to work
-					var hash = Math.random().toString(36).substring(2) + (new Date()).getTime();
-					console.log('User', data.username, 'logged in with hash:', hash);
-					res.end(JSON.stringify({
-						status: true,
-						desc: 'Logged in Successfully.',
-						token: hash
-					}));
-				}
-			});
+                // return;
+            }
+            else {
+    			mongo.find('users', data, (docs) => {
+    				if(docs.length < 1){
+    					res.end(JSON.stringify({
+    						status: false,
+    						desc: 'Username or Password Incorrect.',
+    					}));
+    				} else {
+    					//Generate User session hash and return for user login auth to work
+    					var hash = Math.random().toString(36).substring(2) + (new Date()).getTime();
+    					console.log('User', data.username, 'logged in with hash:', hash);
+    					res.end(JSON.stringify({
+    						status: true,
+    						desc: 'Logged in Successfully.',
+    						token: hash
+    					}));
+    				}
+    			});
+            }
 		}
 	});
 }
@@ -212,7 +215,8 @@ startup = () => {
                     'login ever again, as the server will report he is already logged in.');
             }
             else {
-                userArray.splice(userArray.findIndex((s) => s.userHash === clientSockets[socket.id]), 1);
+                console.log('Disconnected', clientSockets[socket.id]);
+                // userArray.splice(userArray.findIndex((s) => s.userHash === clientSockets[socket.id]), 1);
                 delete clientSockets[socket.id];
             }
         });
@@ -245,7 +249,7 @@ startup = () => {
                     userArray[np].health -= factor ;
                     if (userArray[np].health <= 0)
                     {
-                        rtree.remove({x: oldX, y: oldY, w: playerSquareDimensions, h: playerSquareDimensions});
+                        rtree.remove({x: userArray[np].x, y: userArray[np].y, w: playerSquareDimensions, h: playerSquareDimensions});
                         userArray[np] = User(userArray[np].userName, userArray[np].userHash, 1000,1000);
                         rtree.insert({
                             x: userArray[np].x,
@@ -389,11 +393,13 @@ startup = () => {
     console.log('Server Started\n\n');
     console.log('Implement User kicking by user time out and have a really small timeout like 10s');
     console.log('Test disconnect Code');
-    // console.log('Implement User Logout on Disconnect');
+    console.log('Figure out multiple login');
+    console.log('Splicing Issue on Disconnect');
     console.log('Removing and reinserting on RTrees?');
     console.log('Somebody move the collision to rely on the rTree.');
 	console.log('Resolve update() -> "UpdateCoords" -> "MapGen" -> draw()');
-    // console.log("Handle Invalid Hash and Usernames by implementing auth function.\n\n");
+    console.log('Items class and make it collide with the RTree');
+    console.log("Handle Invalid Hash and Usernames by implementing auth function.\n\n");
 
 }
 
