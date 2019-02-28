@@ -66,7 +66,7 @@ module.exports = {
 		    },2);
 		}
 		// Generate pickable SRWs at random locations
-		for(var i = 1; i <= 1; i++){
+		for(var i = 1; i <= noOfSRWOnMap; i++){
 		    rtree.insert({
 		        x: Math.floor(Math.random() * (mapSquareSize)) + 0,
 		        y: Math.floor(Math.random() * (mapSquareSize)) + 0,

@@ -80,6 +80,8 @@
 		httpRequest.send(JSON.stringify(data));
 		return httpRequest;
 	}
+	// Zoom variables
+	var factor = 1 ;
 	url = 'http://localhost:8080';
 	var testing = 0 ;
 	var wSRW = 30;
@@ -176,7 +178,10 @@
 
 			canvas.width = window.innerWidth * correctionFactor;
 			canvas.height = window.innerHeight * correctionFactor;
-
+			var width = canvas.width ;
+			var height = canvas.height ;
+			var visibleWidth = width ;
+			var visibleHeight = height ;
             player = User(plr.x, plr.y, plr.cameraX, plr.cameraY, plr.ID, canvas.width, canvas.height, hash);
             // canvas = document.getElementById("fuckyou");
 			
@@ -205,15 +210,22 @@
 				player.mouseDown = false ;
 				console.log("Mouse clicked");
 			}
-			document.onwheel = () => {
+			window.addEventListener('wheel', function(e) {
+
 				console.log("Mouse wheel thing done");
-				ctx.scale(0.8,0.8);
-				player.canvasWidth = player.canvasWidth/0.8 ;
-				player.canvasHeight = player.canvasHeight/0.8 ;
+				if (e.deltaY < 0)
+					factor = 1 / 0.8 ;
+				else
+					factor = 0.8 ;
+				ctx.scale(factor,factor);
+				player.canvasWidth = player.canvasWidth/factor ;
+				player.canvasHeight = player.canvasHeight/factor ;
 				player.x = player.cameraX + player.canvasWidth/2 ;
 				player.y = player.cameraY + player.canvasHeight/2 ;
+
+				
 				testing = 1 ;
-			}
+			});
 			update();
 
 		});

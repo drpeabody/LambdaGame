@@ -5,7 +5,7 @@ const stdin = process.openStdin();
 var fs = require('fs');
 var mongo = require('./mongo.js');
 const RTree = require("rtree")
-const Map = require("./MapGenTest")
+const Map = require("./MapGeneration")
 var userArray = [];
 var clientSockets = [];
 
@@ -227,7 +227,7 @@ startup = () => {
             player = player;
 			emitObjects = [];
 			var ID = player.ID;
-            var speed = 5;
+            var speed = 500;
 
             x = userArray[ID-1].x;
             y = userArray[ID-1].y;
