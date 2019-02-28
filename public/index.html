@@ -81,7 +81,7 @@
 		return httpRequest;
 	}
 	url = 'http://localhost:8080';
-
+	var testing = 0 ;
 	var wSRW = 30;
 	var hSRW = 30;
 	var correctionFactor = 0.95 ;
@@ -205,6 +205,15 @@
 				player.mouseDown = false ;
 				console.log("Mouse clicked");
 			}
+			document.onwheel = () => {
+				console.log("Mouse wheel thing done");
+				ctx.scale(0.8,0.8);
+				player.canvasWidth = player.canvasWidth/0.8 ;
+				player.canvasHeight = player.canvasHeight/0.8 ;
+				player.x = player.cameraX + player.canvasWidth/2 ;
+				player.y = player.cameraY + player.canvasHeight/2 ;
+				testing = 1 ;
+			}
 			update();
 
 		});
@@ -216,16 +225,23 @@
 			 h = Math.floor(player.y / canvas.height);
 
 			// Add black regions to the end of the map
-
-			for(var x = w-1; x <= w + 1; x++){
-				for (var y = h-1; y <= h + 1; y++) {
-					if(x < 0 || y < 0) continue;
-					ctx.drawImage(images['grass'], 
-						x * canvas.width - player.cameraX, y * canvas.height - player.cameraY, 
-						canvas.width, canvas.height);		
+			if (testing == 0)
+			{
+				for(var x = w-1; x <= w + 1; x++){
+					for (var y = h-1; y <= h + 1; y++) {
+						if(x < 0 || y < 0) continue;
+						ctx.drawImage(images['grass'], 
+							x * canvas.width - player.cameraX, y * canvas.height - player.cameraY, 
+							canvas.width, canvas.height);		
+					}
 				}
 			}
-
+			
+			else
+			{
+				ctx.fillStyle = "#42692f";
+				ctx.fillRect(0,0,player.canvasWidth,player.canvasHeight);
+			}
 			////////////////////////////FOR SRW
 			if(data.weapons["SRW"]){
 				console.log("I got the power.")
