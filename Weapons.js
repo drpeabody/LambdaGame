@@ -23,8 +23,8 @@ var rtreeWeapons = [3];
 /* end */
 
 
-module.exports.weaponRemove = (obj) =>{
-    rtree.remove({x: obj.x, y: obj.y, w: obj.w, h: obj.h});
+module.exports.weaponRemove = (rectangle) =>{
+    rtree.remove({x: rectangle.x, y: rectangle.y, w: rectangle.w, h: rectangle.h});
 }
 module.exports.updateWeapon = (rtreeID,ID) =>{
 	var v = module.exports.allWeapons[rtreeWeapons.indexOf(rtreeID)];
