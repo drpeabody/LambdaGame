@@ -9,6 +9,7 @@
      5 : Water (OCEAN LEFT STRIP)
 	 6 : Snow (Centre Block)
 	 7 : Desert (Centre Block)
+	 8 : Weapon (SRW) (Sword)
 */
 
 

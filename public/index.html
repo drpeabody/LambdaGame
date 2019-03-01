@@ -99,6 +99,7 @@
 		water: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550772947/WATER2.png',
 		snow: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550781217/snow.png',
 		sand: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550772947/sand.png',
+		sword: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550735072/Sword.png',
 		playerStandFront: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550785864/Lookup.png',
 		playerStandLeft: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550786463/lookleft.png',
 		playerStandRight: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550785864/Lookright.png',
@@ -255,8 +256,7 @@
 						ctx.drawImage(images['tree'], x, y);
 					break ;
 					case 3:
-						ctx.fillStyle = "#111144";
-						ctx.fillRect(x, y, obj.w, obj.h);
+						ctx.drawImage(images['sword'],x,y);
 					break;
 					case 4:
 						ctx.fillStyle = '#000';

@@ -5,7 +5,8 @@ const stdin = process.openStdin();
 var fs = require('fs');
 var mongo = require('./mongo.js');
 const RTree = require("rtree")
-const Map = require("./MapGenTest")
+const Map = require("./MapGenTest");
+const Weapons = require("./Weapons");
 global.userArray = [];
 var clientSockets = [];
 
@@ -25,9 +26,11 @@ function User(userName, userHash, x, y)
         color : "#441111",
         currentObjects : [],
         weapons : [],
+        currentWeapon : null,
         health : 100
     }
 }
+
 
 global.rtree = RTree(100);
 
@@ -209,9 +212,14 @@ startup = () => {
             {
                 var np = Map.findNearestPlayer(ID-1);
                 var factor = 1 ;
+                if (userArray[ID-1].currentWeapon != null)
+                {
+                    factor = userArray[ID-1].currentWeapon.damage ;
+                }
                 if (np >= 0 && userArray[np].health > 0)
                 {
                     userArray[np].health -= factor ;
+                    console.log("Player ID : " + np + " Health : " + userArray[np].health + "%");
                     if (userArray[np].health <= 0)
                     {
                         rtree.remove({x: userArray[np].x, y: userArray[np].y, w: playerSquareDimension, h: playerSquareDimension});
@@ -241,13 +249,9 @@ startup = () => {
 					{
                     	willCollide = true;
                         //If it is a short range weapon
-                        if(currentObjects[ctr].leaf == 3){
-                            weaponRemove(currentObjects[ctr]);
-                            updateWeapon(3);
-                        }
-                        if (currentObjects[ctr].leaf == 6 || currentObjects[ctr].leaf == 7)
-                        {
-                            willCollide = false ;
+                        if(Weapons.isWeapon(currentObjects[ctr].leaf)){
+                            Weapons.weaponRemove(currentObjects[ctr]);
+                            Weapons.updateWeapon(currentObjects[ctr].leaf,ID-1);
                         }
                     }
 				}        
@@ -265,13 +269,9 @@ startup = () => {
 					{
                         willCollide = true;
                         //If it is a short range weapon
-                        if(currentObjects[ctr].leaf == 3){
-                            weaponRemove(currentObjects[ctr]);
-                            updateWeapon(3);
-                        }
-                        if (currentObjects[ctr].leaf == 6 || currentObjects[ctr].leaf == 7)
-                        {
-                            willCollide = false ;
+                        if(Weapons.isWeapon(currentObjects[ctr].leaf)){
+                            Weapons.weaponRemove(currentObjects[ctr]);
+                            Weapons.updateWeapon(currentObjects[ctr].leaf,ID-1);
                         }
                      }
 				}        
@@ -289,13 +289,9 @@ startup = () => {
 					{
                         willCollide = true;
                         //If it is a short range weapon
-                        if(currentObjects[ctr].leaf == 3){
-                            weaponRemove(currentObjects[ctr]);
-                            updateWeapon(3);
-                        }
-                        if (currentObjects[ctr].leaf == 6 || currentObjects[ctr].leaf == 7)
-                        {
-                            willCollide = false ;
+                        if(Weapons.isWeapon(currentObjects[ctr].leaf)){
+                            Weapons.weaponRemove(currentObjects[ctr]);
+                            Weapons.updateWeapon(currentObjects[ctr].leaf,ID-1);
                         }
                      }
 				}        
@@ -313,13 +309,9 @@ startup = () => {
 					{
                         willCollide = true;
                         //If it is a short range weapon
-                        if(currentObjects[ctr].leaf == 3){
-                            weaponRemove(currentObjects[ctr]);
-                            updateWeapon(3);
-                        }
-                        if (currentObjects[ctr].leaf == 6 || currentObjects[ctr].leaf == 7)
-                        {
-                            willCollide = false ;
+                        if(Weapons.isWeapon(currentObjects[ctr].leaf)){
+                            Weapons.weaponRemove(currentObjects[ctr]);
+                            Weapons.updateWeapon(currentObjects[ctr].leaf,ID-1);
                         }
                      }
 				}        
@@ -329,17 +321,8 @@ startup = () => {
                 	player.cameraX += speed ;
                 }
             }
-            weaponRemove = (obj) =>{
-                rtree.remove({x: obj.x, y: obj.y, w: obj.w, h: obj.h});
-            }
-            updateWeapon = (weaponID) =>{
-                switch(weaponID){
-                case 3:
-                    userArray[ID-1].weapons["SRW"] = true;
-
-                break;
-                }
-            }
+            
+            
             rtree.remove({x: oldX, y: oldY, w: playerSquareDimension, h: playerSquareDimension});
             rtree.insert({x: x, y: y, w: playerSquareDimension, h: playerSquareDimension}, 11);
             userArray[ID-1].x = x;
