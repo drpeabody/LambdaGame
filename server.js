@@ -258,6 +258,46 @@ startup = () => {
                 socket.emit('UserId', {x:userArray[ID-1].x, y:userArray[ID-1].y, ID:(ID-1)})                
             }
 
+            // var coll = (rectangle, pos, speed, pred) => {
+            //     if (pred(pos + speed)){
+            //     var willCollide = false ;
+                
+            //     var arr = rtree.search(rectangle);
+            //     val willCollide = false;
+
+            //     if(arr.length > 0) 
+            //         pos += speed;
+            //         willCollide = true;
+            //     }
+
+            //     return {
+            //         pos: pos,
+            //         status: willCollide
+            //     }
+            // }
+
+            // var flag = false;
+            // if(player.bWDown) {
+            //     var res = coll(rectangle, y, -speed, (s) => s >= 0);
+            //     y = res.pos;
+            //     flag = flag | res.status;
+            // }
+            // if(player.bADown) {
+            //     var res = coll(rectangle, x, -speed, (s) => s >= 0);
+            //     x = res.pos;
+            //     flag = flag | res.status;
+            // }
+            // if(player.bWDown) {
+            //     var res = coll(rectangle, y, speed, (s) => s <= MapSize - playerSquareDimension);
+            //     y = res.pos;
+            //     flag = flag | res.status;
+            // }
+            // if(player.bWDown) {
+            //     var res = coll(rectangle, x, speed, (s) => s <= MapSize - playerSquareDimension);
+            //     x = res.pos;
+            //     flag = flag | res.status;
+            // }
+
             if (player.bWDown && (y - speed>= 0)){
                 var willCollide = false ;
                 
