@@ -232,7 +232,6 @@ startup = () => {
                         },11);          
                     }
                 }
-                player.mouseDown = false ;
             }
             if (userArray[ID-1].health <= 0)
             {
