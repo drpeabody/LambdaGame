@@ -6,36 +6,12 @@ var fs = require('fs');
 var mongo = require('./mongo.js');
 const RTree = require("rtree")
 const Map = require("./MapGenTest")
-var userArray = [];
+global.userArray = [];
 var clientSockets = [];
 
-var mapSquareSize = 2000000 ;
 var playerSquareDimension = 30 ;
-var playerSquareDimensions = playerSquareDimension ;
-var MapSize = mapSquareSize ;
-
-function getDistance(id1,id2)
-{
-    return(Math.sqrt((userArray[id1].x-userArray[id2].x)^2+(userArray[id1].y-userArray[id2].y)^2));
-}
-// naive function rn, replace with better algo
-function findNearestPlayer(ID)
-{
-    var minID = -1 ;
-    var minDist = mapSquareSize ;
-    for (var i = 0 ; i < userArray.length ; i++)
-    {
-        if (i != ID)
-        {
-            if (minDist > getDistance(ID,i))
-            {
-                minDist = getDistance(ID,i) ;
-                minID = i ;
-            }
-        }
-    }
-    return minID ;
-}
+// var MapSize = Map.mapSquareSize ; // cannot be done rn since map is localized
+var MapSize = 2000000 ;
 
 function User(userName, userHash, x, y)
 {
@@ -52,17 +28,6 @@ function User(userName, userHash, x, y)
         health : 100
     }
 }
-
-
-/*
-	RTREE Type Chart :
-    -1 : Grass
-	 1 : Rock
-	 2 : Tree
-     3 : Short Range Weapon
-     11 : Player
-*/
-
 
 global.rtree = RTree(100);
 
@@ -240,16 +205,16 @@ startup = () => {
 
             var currentObjects = userArray[ID-1].currentObjects ;
 
-            if (player.mouseDown)
+            if (player.mouseDown && userArray.length > 1)
             {
-                var np = findNearestPlayer(ID-1);
+                var np = Map.findNearestPlayer(ID-1);
                 var factor = 1 ;
                 if (np >= 0 && userArray[np].health > 0)
                 {
                     userArray[np].health -= factor ;
                     if (userArray[np].health <= 0)
                     {
-                        rtree.remove({x: userArray[np].x, y: userArray[np].y, w: playerSquareDimensions, h: playerSquareDimensions});
+                        rtree.remove({x: userArray[np].x, y: userArray[np].y, w: playerSquareDimension, h: playerSquareDimension});
                         userArray[np] = User(userArray[np].userName, userArray[np].userHash, 1000,1000);
                         rtree.insert({
                             x: userArray[np].x,
@@ -272,7 +237,7 @@ startup = () => {
                 
                 for (var ctr = 0 ; ctr < currentObjects.length ; ctr++)
                 {
-                    if ((y-speed > currentObjects[ctr].y)&&(y - speed < currentObjects[ctr].y + currentObjects[ctr].h) && (x + playerSquareDimensions > currentObjects[ctr].x) && (x < currentObjects[ctr].x + currentObjects[ctr].w))
+                    if ((y-speed > currentObjects[ctr].y)&&(y - speed < currentObjects[ctr].y + currentObjects[ctr].h) && (x + playerSquareDimension > currentObjects[ctr].x) && (x < currentObjects[ctr].x + currentObjects[ctr].w))
 					{
                     	willCollide = true;
                         //If it is a short range weapon
@@ -296,7 +261,7 @@ startup = () => {
             	
                 for (var ctr = 0 ; ctr < currentObjects.length ; ctr++)
                 {	
-                    if ((x - speed > currentObjects[ctr].x) && (x - speed < currentObjects[ctr].x + currentObjects[ctr].w) && (y + playerSquareDimensions > currentObjects[ctr].y) && (y < currentObjects[ctr].y + currentObjects[ctr].h))
+                    if ((x - speed > currentObjects[ctr].x) && (x - speed < currentObjects[ctr].x + currentObjects[ctr].w) && (y + playerSquareDimension > currentObjects[ctr].y) && (y < currentObjects[ctr].y + currentObjects[ctr].h))
 					{
                         willCollide = true;
                         //If it is a short range weapon
@@ -315,12 +280,12 @@ startup = () => {
                 	x -= speed; player.cameraX -= speed ;
                 }	
             }
-            if (player.bSDown && (y + playerSquareDimensions + speed <= MapSize))
+            if (player.bSDown && (y + playerSquareDimension + speed <= MapSize))
             {
             	var willCollide = false ;
                 for (var ctr = 0 ; ctr < userArray[ID-1].currentObjects.length ; ctr++)
                 {
-                    if ((y + speed + playerSquareDimensions > currentObjects[ctr].y) && (y + speed + playerSquareDimensions < currentObjects[ctr].y + currentObjects[ctr].h) && (x + playerSquareDimensions > currentObjects[ctr].x) && (x < currentObjects[ctr].x + currentObjects[ctr].w))
+                    if ((y + speed + playerSquareDimension > currentObjects[ctr].y) && (y + speed + playerSquareDimension < currentObjects[ctr].y + currentObjects[ctr].h) && (x + playerSquareDimension > currentObjects[ctr].x) && (x < currentObjects[ctr].x + currentObjects[ctr].w))
 					{
                         willCollide = true;
                         //If it is a short range weapon
@@ -340,11 +305,11 @@ startup = () => {
                 	player.cameraY += speed ;
                 }
             }
-            if (player.bDDown && (x + playerSquareDimensions + speed) <= MapSize){ 
+            if (player.bDDown && (x + playerSquareDimension + speed) <= MapSize){ 
             	var willCollide = false ;
                 for (var ctr = 0 ; ctr < userArray[ID-1].currentObjects.length ; ctr++)
                 {
-                    if ((x + speed + playerSquareDimensions > currentObjects[ctr].x) && (x + speed + playerSquareDimensions < currentObjects[ctr].x + currentObjects[ctr].w) && (y + playerSquareDimensions > currentObjects[ctr].y) && (y < currentObjects[ctr].y + currentObjects[ctr].h))
+                    if ((x + speed + playerSquareDimension > currentObjects[ctr].x) && (x + speed + playerSquareDimension < currentObjects[ctr].x + currentObjects[ctr].w) && (y + playerSquareDimension > currentObjects[ctr].y) && (y < currentObjects[ctr].y + currentObjects[ctr].h))
 					{
                         willCollide = true;
                         //If it is a short range weapon
@@ -375,8 +340,8 @@ startup = () => {
                 break;
                 }
             }
-            rtree.remove({x: oldX, y: oldY, w: playerSquareDimensions, h: playerSquareDimensions});
-            rtree.insert({x: x, y: y, w: playerSquareDimensions, h: playerSquareDimensions}, 11);
+            rtree.remove({x: oldX, y: oldY, w: playerSquareDimension, h: playerSquareDimension});
+            rtree.insert({x: x, y: y, w: playerSquareDimension, h: playerSquareDimension}, 11);
             userArray[ID-1].x = x;
             userArray[ID-1].y = y;
 

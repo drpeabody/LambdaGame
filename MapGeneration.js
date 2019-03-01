@@ -11,12 +11,13 @@
 	 7 : Desert (Centre Block)
 */
 
+
 var size = 1000000;
 var noOfSRWOnMap = 3000000; //SRW = Short Range Weapons
 const wSRW = 30;
 const hSRW = 30;
 var mapSquareSize = 2000000 ;
-var playerSquareDimension = 50 ;
+var playerSquareDimension = 30 ;
 var playerSquareDimensions = playerSquareDimension ;
 var MapSize = mapSquareSize ;
 
@@ -40,7 +41,8 @@ var DesertBiomes = 5000 ;
 var lowerRangeDimensionDesertBiomes = 45000 ;
 var higherRangeDimensionDesertBiomes = 55000 ;
 // end
-
+exports.mapSquareSize = mapSquareSize ;
+exports.playerSquareDimension = playerSquareDimension ;
 module.exports = {
 	MapGen: function() {
 
@@ -113,5 +115,27 @@ module.exports = {
 
 	    console.timeEnd("Generating-map");
 	    console.log("Generation Done");
+	},
+	getDistance: function(id1,id2)
+	{
+	    return(Math.sqrt((userArray[id1].x-userArray[id2].x)^2+(userArray[id1].y-userArray[id2].y)^2));
+	},
+	// naive function rn, replace with better algo
+	findNearestPlayer: function(ID)
+	{
+	    var minID = -1 ;
+	    var minDist = mapSquareSize ;
+	    for (var i = 0 ; i < userArray.length ; i++)
+	    {
+	        if (i != ID)
+	        {
+	            if (minDist > module.exports.getDistance(ID,i))
+	            {
+	                minDist = module.exports.getDistance(ID,i) ;
+	                minID = i ;
+	            }
+	        }
+	    }
+	    return minID ;
 	}
 };
