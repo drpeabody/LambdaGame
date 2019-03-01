@@ -258,128 +258,132 @@ startup = () => {
                 socket.emit('UserId', {x:userArray[ID-1].x, y:userArray[ID-1].y, ID:(ID-1)})                
             }
 
-            // var coll = (rectangle, pos, speed, pred) => {
-            //     if (pred(pos + speed)){
-            //         var willCollide = false ;
+            var coll = (rectangle, pos, speed, pred) => {
+                if (pred(pos + speed)){
+                    var willCollide = false ;
                     
-            //         var arr = rtree.search(rectangle);
-
-            //         if(arr.length > 0) 
-            //         {
-            //             pos += speed;
-            //             willCollide = true;
-            //         }
-
-            //         return {
-            //             pos: pos,
-            //             status: willCollide
-            //         }
-            //     }
-            // }
-
-            // var flag = false;
-            // if(player.bWDown) {
-            //     var res = coll({x:player.x,y:player.y-speed,w:playerSquareDimension,h:playerSquareDimension}, y, -speed, (s) => s >= 0);
-            //     y = res.pos;
-            //     flag = flag | res.status;
-            // }
-            // if(player.bADown) {
-            //     var res = coll({x:player.x-speed,y:player.y,w:playerSquareDimension,h:playerSquareDimension}, x, -speed, (s) => s >= 0);
-            //     x = res.pos;
-            //     flag = flag | res.status;
-            // }
-            // if(player.bSDown) {
-            //     var res = coll({x:player.x,y:player.y+speed,w:playerSquareDimension,h:playerSquareDimension}, y, speed, (s) => s <= MapSize - playerSquareDimension);
-            //     y = res.pos;
-            //     flag = flag | res.status;
-            // }
-            // if(player.bDDown) {
-            //     var res = coll({x:player.x+speed,y:player.y,w:playerSquareDimension,h:playerSquareDimension}, x, speed, (s) => s <= MapSize - playerSquareDimension);
-            //     x = res.pos;
-            //     flag = flag | res.status;
-            // }
-
-            if (player.bWDown && (y - speed>= 0)){
-                var willCollide = false ;
-                
-                for (var ctr = 0 ; ctr < currentObjects.length ; ctr++)
-                {
-                    if ((y-speed > currentObjects[ctr].y)&&(y - speed < currentObjects[ctr].y + currentObjects[ctr].h) && (x + playerSquareDimension > currentObjects[ctr].x) && (x < currentObjects[ctr].x + currentObjects[ctr].w))
-					{
-                    	willCollide = true;
-                        //If it is a short range weapon
-                        if(Weapons.isWeapon(currentObjects[ctr].leaf)){
-                            Weapons.weaponRemove(currentObjects[ctr]);
-                            Weapons.updateWeapon(currentObjects[ctr].leaf,ID-1);
-                        }
+                    var arr = rtree.search(rectangle);
+                    
+                    if(arr.length > 0) 
+                    {
+                        pos += speed;
+                        willCollide = true;
                     }
-				}        
-				if (!willCollide)
-				{
-                	y -= speed; player.cameraY -= speed ;
-				}
+                    console.log(willCollide);
+                    return {
+                        pos: pos,
+                        status: willCollide
+                    }
+                }
             }
-            if (player.bADown && (x - speed>= 0)){
-            	var willCollide = false ;
+
+            var flag = false;
+            if(player.bWDown) {
+                var res = coll({x:player.x,y:player.y-speed,w:playerSquareDimension,h:playerSquareDimension}, y, -speed, (s) => s >= 0);
+                console.log("res,pos = " + res.pos + " status = " + res.status);
+                if (res.pos!=null && res.status) y = res.pos;
+                flag = flag | res.status;
+            }
+            if(player.bADown) {
+                var res = coll({x:player.x-speed,y:player.y,w:playerSquareDimension,h:playerSquareDimension}, x, -speed, (s) => s >= 0);
+                console.log("res,pos = " + res.pos + " status = " + res.status);
+                if (res.pos!=null && res.status) x = res.pos;
+                flag = flag | res.status;
+            }
+            if(player.bSDown) {
+                var res = coll({x:player.x,y:player.y+speed,w:playerSquareDimension,h:playerSquareDimension}, y, speed, (s) => s <= MapSize - playerSquareDimension);
+                console.log("res,pos = " + res.pos + " status = " + res.status);
+                if (res.pos!=null && res.status) y = res.pos;
+                flag = flag | res.status;
+            }
+            if(player.bDDown) {
+                var res = coll({x:player.x+speed,y:player.y,w:playerSquareDimension,h:playerSquareDimension}, x, speed, (s) => s <= MapSize - playerSquareDimension);
+                console.log("res,pos = " + res.pos + " status = " + res.status);
+                if (res.pos!=null && res.status) x = res.pos;
+                flag = flag | res.status;
+            }
+
+    //         if (player.bWDown && (y - speed>= 0)){
+    //             var willCollide = false ;
+                
+    //             for (var ctr = 0 ; ctr < currentObjects.length ; ctr++)
+    //             {
+    //                 if ((y-speed > currentObjects[ctr].y)&&(y - speed < currentObjects[ctr].y + currentObjects[ctr].h) && (x + playerSquareDimension > currentObjects[ctr].x) && (x < currentObjects[ctr].x + currentObjects[ctr].w))
+				// 	{
+    //                 	willCollide = true;
+    //                     //If it is a short range weapon
+    //                     if(Weapons.isWeapon(currentObjects[ctr].leaf)){
+    //                         Weapons.weaponRemove(currentObjects[ctr]);
+    //                         Weapons.updateWeapon(currentObjects[ctr].leaf,ID-1);
+    //                     }
+    //                 }
+				// }        
+				// if (!willCollide)
+				// {
+    //             	y -= speed; player.cameraY -= speed ;
+				// }
+    //         }
+    //         if (player.bADown && (x - speed>= 0)){
+    //         	var willCollide = false ;
             	
-                for (var ctr = 0 ; ctr < currentObjects.length ; ctr++)
-                {	
-                    if ((x - speed > currentObjects[ctr].x) && (x - speed < currentObjects[ctr].x + currentObjects[ctr].w) && (y + playerSquareDimension > currentObjects[ctr].y) && (y < currentObjects[ctr].y + currentObjects[ctr].h))
-					{
-                        willCollide = true;
-                        //If it is a short range weapon
-                        if(Weapons.isWeapon(currentObjects[ctr].leaf)){
-                            Weapons.weaponRemove(currentObjects[ctr]);
-                            Weapons.updateWeapon(currentObjects[ctr].leaf,ID-1);
-                        }
-                     }
-				}        
-				if (!willCollide)
-                {
-                	x -= speed; player.cameraX -= speed ;
-                }	
-            }
-            if (player.bSDown && (y + playerSquareDimension + speed <= MapSize))
-            {
-            	var willCollide = false ;
-                for (var ctr = 0 ; ctr < userArray[ID-1].currentObjects.length ; ctr++)
-                {
-                    if ((y + speed + playerSquareDimension > currentObjects[ctr].y) && (y + speed + playerSquareDimension < currentObjects[ctr].y + currentObjects[ctr].h) && (x + playerSquareDimension > currentObjects[ctr].x) && (x < currentObjects[ctr].x + currentObjects[ctr].w))
-					{
-                        willCollide = true;
-                        //If it is a short range weapon
-                        if(Weapons.isWeapon(currentObjects[ctr].leaf)){
-                            Weapons.weaponRemove(currentObjects[ctr]);
-                            Weapons.updateWeapon(currentObjects[ctr].leaf,ID-1);
-                        }
-                     }
-				}        
-				if (!willCollide)
-                {
-                	y += speed; 
-                	player.cameraY += speed ;
-                }
-            }
-            if (player.bDDown && (x + playerSquareDimension + speed) <= MapSize){ 
-            	var willCollide = false ;
-                for (var ctr = 0 ; ctr < userArray[ID-1].currentObjects.length ; ctr++)
-                {
-                    if ((x + speed + playerSquareDimension > currentObjects[ctr].x) && (x + speed + playerSquareDimension < currentObjects[ctr].x + currentObjects[ctr].w) && (y + playerSquareDimension > currentObjects[ctr].y) && (y < currentObjects[ctr].y + currentObjects[ctr].h))
-					{
-                        willCollide = true;
-                        //If it is a short range weapon
-                        if(Weapons.isWeapon(currentObjects[ctr].leaf)){
-                            Weapons.weaponRemove(currentObjects[ctr]);
-                            Weapons.updateWeapon(currentObjects[ctr].leaf,ID-1);
-                        }
-                     }
-				}        
-				if (!willCollide)
-                {
-                	x += speed; 
-                	player.cameraX += speed ;
-                }
-            }
+    //             for (var ctr = 0 ; ctr < currentObjects.length ; ctr++)
+    //             {	
+    //                 if ((x - speed > currentObjects[ctr].x) && (x - speed < currentObjects[ctr].x + currentObjects[ctr].w) && (y + playerSquareDimension > currentObjects[ctr].y) && (y < currentObjects[ctr].y + currentObjects[ctr].h))
+				// 	{
+    //                     willCollide = true;
+    //                     //If it is a short range weapon
+    //                     if(Weapons.isWeapon(currentObjects[ctr].leaf)){
+    //                         Weapons.weaponRemove(currentObjects[ctr]);
+    //                         Weapons.updateWeapon(currentObjects[ctr].leaf,ID-1);
+    //                     }
+    //                  }
+				// }        
+				// if (!willCollide)
+    //             {
+    //             	x -= speed; player.cameraX -= speed ;
+    //             }	
+    //         }
+    //         if (player.bSDown && (y + playerSquareDimension + speed <= MapSize))
+    //         {
+    //         	var willCollide = false ;
+    //             for (var ctr = 0 ; ctr < userArray[ID-1].currentObjects.length ; ctr++)
+    //             {
+    //                 if ((y + speed + playerSquareDimension > currentObjects[ctr].y) && (y + speed + playerSquareDimension < currentObjects[ctr].y + currentObjects[ctr].h) && (x + playerSquareDimension > currentObjects[ctr].x) && (x < currentObjects[ctr].x + currentObjects[ctr].w))
+				// 	{
+    //                     willCollide = true;
+    //                     //If it is a short range weapon
+    //                     if(Weapons.isWeapon(currentObjects[ctr].leaf)){
+    //                         Weapons.weaponRemove(currentObjects[ctr]);
+    //                         Weapons.updateWeapon(currentObjects[ctr].leaf,ID-1);
+    //                     }
+    //                  }
+				// }        
+				// if (!willCollide)
+    //             {
+    //             	y += speed; 
+    //             	player.cameraY += speed ;
+    //             }
+    //         }
+    //         if (player.bDDown && (x + playerSquareDimension + speed) <= MapSize){ 
+    //         	var willCollide = false ;
+    //             for (var ctr = 0 ; ctr < userArray[ID-1].currentObjects.length ; ctr++)
+    //             {
+    //                 if ((x + speed + playerSquareDimension > currentObjects[ctr].x) && (x + speed + playerSquareDimension < currentObjects[ctr].x + currentObjects[ctr].w) && (y + playerSquareDimension > currentObjects[ctr].y) && (y < currentObjects[ctr].y + currentObjects[ctr].h))
+				// 	{
+    //                     willCollide = true;
+    //                     //If it is a short range weapon
+    //                     if(Weapons.isWeapon(currentObjects[ctr].leaf)){
+    //                         Weapons.weaponRemove(currentObjects[ctr]);
+    //                         Weapons.updateWeapon(currentObjects[ctr].leaf,ID-1);
+    //                     }
+    //                  }
+				// }        
+				// if (!willCollide)
+    //             {
+    //             	x += speed; 
+    //             	player.cameraX += speed ;
+    //             }
+    //         }
             
             
             rtree.remove({x: oldX, y: oldY, w: playerSquareDimension, h: playerSquareDimension});
