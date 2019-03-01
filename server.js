@@ -260,40 +260,41 @@ startup = () => {
 
             // var coll = (rectangle, pos, speed, pred) => {
             //     if (pred(pos + speed)){
-            //     var willCollide = false ;
-                
-            //     var arr = rtree.search(rectangle);
-            //     val willCollide = false;
+            //         var willCollide = false ;
+                    
+            //         var arr = rtree.search(rectangle);
 
-            //     if(arr.length > 0) 
-            //         pos += speed;
-            //         willCollide = true;
-            //     }
+            //         if(arr.length > 0) 
+            //         {
+            //             pos += speed;
+            //             willCollide = true;
+            //         }
 
-            //     return {
-            //         pos: pos,
-            //         status: willCollide
+            //         return {
+            //             pos: pos,
+            //             status: willCollide
+            //         }
             //     }
             // }
 
             // var flag = false;
             // if(player.bWDown) {
-            //     var res = coll(rectangle, y, -speed, (s) => s >= 0);
+            //     var res = coll({x:player.x,y:player.y-speed,w:playerSquareDimension,h:playerSquareDimension}, y, -speed, (s) => s >= 0);
             //     y = res.pos;
             //     flag = flag | res.status;
             // }
             // if(player.bADown) {
-            //     var res = coll(rectangle, x, -speed, (s) => s >= 0);
+            //     var res = coll({x:player.x-speed,y:player.y,w:playerSquareDimension,h:playerSquareDimension}, x, -speed, (s) => s >= 0);
             //     x = res.pos;
             //     flag = flag | res.status;
             // }
-            // if(player.bWDown) {
-            //     var res = coll(rectangle, y, speed, (s) => s <= MapSize - playerSquareDimension);
+            // if(player.bSDown) {
+            //     var res = coll({x:player.x,y:player.y+speed,w:playerSquareDimension,h:playerSquareDimension}, y, speed, (s) => s <= MapSize - playerSquareDimension);
             //     y = res.pos;
             //     flag = flag | res.status;
             // }
-            // if(player.bWDown) {
-            //     var res = coll(rectangle, x, speed, (s) => s <= MapSize - playerSquareDimension);
+            // if(player.bDDown) {
+            //     var res = coll({x:player.x+speed,y:player.y,w:playerSquareDimension,h:playerSquareDimension}, x, speed, (s) => s <= MapSize - playerSquareDimension);
             //     x = res.pos;
             //     flag = flag | res.status;
             // }
