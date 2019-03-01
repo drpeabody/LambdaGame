@@ -27,8 +27,9 @@ module.exports.weaponRemove = (obj) =>{
     rtree.remove({x: obj.x, y: obj.y, w: obj.w, h: obj.h});
 }
 module.exports.updateWeapon = (rtreeID,ID) =>{
-    userArray[ID].weapons.push(module.exports.allWeapons[rtreeWeapons.indexOf(rtreeID)]);
-    userArray[ID].currentWeapon = module.exports.allWeapons[rtreeWeapons.indexOf(rtreeID)];
+	var v = module.exports.allWeapons[rtreeWeapons.indexOf(rtreeID)];
+    userArray[ID].weapons.push(v);
+    userArray[ID].currentWeapon = v;
 }
 module.exports.isWeapon = (rtreeID) => {
 	return(rtreeWeapons.includes(rtreeID));
