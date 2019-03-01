@@ -320,8 +320,6 @@ startup = () => {
     console.log('Server Started\n\n');
     console.log('Implement User kicking by user time out and have a really small timeout like 10s');
     console.log('Splicing Issue on Disconnect');
-    console.log('Removing and reinserting on RTrees?');
-    console.log('Somebody move the collision to rely on the rTree.');
 	console.log('Resolve update() -> "UpdateCoords" -> "MapGen" -> draw()');
     console.log('Items class and make it collide with the RTree\n\n');
 
