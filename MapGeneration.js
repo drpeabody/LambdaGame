@@ -11,7 +11,7 @@
 	 7 : Desert (Centre Block)
 */
 
-var size = 1000000;
+var size = 2000000;
 var noOfSRWOnMap = 3000000; //SRW = Short Range Weapons
 const wSRW = 30;
 const hSRW = 30;
@@ -46,70 +46,47 @@ module.exports = {
 
     	console.time("Generating-map");
 		// Generate rocks at random locations
-		for (var i = 1 ; i <= size ; i++)
-		{
-		    rtree.insert({
-		    	x: Math.floor(Math.random() * (mapSquareSize)) + 0,
-		    	y: Math.floor(Math.random() * (mapSquareSize)) + 0,
-		    	w: 50,
-		    	h: 50
-		    },1);
-		}
-		// Generate trees at random locations (group into biomes later)
-		for (var i = 1 ; i <= size ; i++)
-		{
-		    rtree.insert({
-		        x: Math.floor(Math.random() * (mapSquareSize)) + 0,
-		        y: Math.floor(Math.random() * (mapSquareSize)) + 0,
-		        w: 50,
-		        h: 50
-		    },2);
-		}
-		// Generate pickable SRWs at random locations
-		for(var i = 1; i <= noOfSRWOnMap; i++){
-		    rtree.insert({
-		        x: Math.floor(Math.random() * (mapSquareSize)) + 0,
-		        y: Math.floor(Math.random() * (mapSquareSize)) + 0,
-		        w: wSRW,
-		        h: hSRW
-		    },3);
-		}
-		// Generate water around the map
+		// for (var i = 1 ; i <= size ; i++)
+		// {
+		//     rtree.insert({
+		//     	x: Math.floor(Math.random() * (mapSquareSize)) + 0,
+		//     	y: Math.floor(Math.random() * (mapSquareSize)) + 0,
+		//     	w: 50,
+		//     	h: 50
+		//     },1);
+		// }
+		// // Generate rocks at random locations (group into biomes later)
+		// for (var i = 1 ; i <= size ; i++)
+		// {
+		//     rtree.insert({
+		//         x: Math.floor(Math.random() * (mapSquareSize)) + 0,
+		//         y: Math.floor(Math.random() * (mapSquareSize)) + 0,
+		//         w: 50,
+		//         h: 50
+		//     },2);
+		// }
 
-		// rtree.insert({
-		// 	x: 0,
-		// 	y: 0,
-		// 	w: mapSquareSize,
-		// 	h: widthOfWater
-		// },4);
-		// rtree.insert({
-		// 	x: 0,
-		// 	y: 0,
-		// 	w: widthOfWater,
-		// 	h: mapSquareSize
-		// },5);
-		// Generate snow biomes around the map
-		for (var i = 1 ; i <= 1 ; i++)
+
+		// implement a boundary of rocks, cut this out later. 
+		for (var i = 0 ; i < 2000000 ; i+=100)
 		{
 			rtree.insert({
-				//x: Math.floor(Math.random()*(upper-lower+1)) + lower,
-				//y: Math.floor(Math.random()*(upper-lower+1)) + lower,
-				x: 1000,
-				y: 1000,
-				w: 45000,
-				h: 45000
-			},6);
-
+		        x: 1999950,
+		        y: i,
+		        w: 100,
+		        h: 100
+		    },100);
 		}
-		for (var i = 1 ; i <= 1 ; i++)
+		for (var i = 0 ; i < 2000000 ; i+=100)
 		{
 			rtree.insert({
-				x: Math.floor(Math.random()*(upper-lower+1)) + lower,
-				y: Math.floor(Math.random()*(upper-lower+1)) + lower,
-				w: 45000,
-				h: 45000
-			},7);
+		        x: i,
+		        y: 1999950,
+		        w: 100,
+		        h: 100
+		    },100);
 		}
+
 
 	    console.timeEnd("Generating-map");
 	    console.log("Generation Done");
