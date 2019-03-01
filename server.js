@@ -98,7 +98,7 @@ function handler (req, res) {
                     }
 
 					//Generate User session hash and return for user login auth to work
-					var hash = Math.random().toString(36).substring(2) + (new Date()).getTime();
+					var hash = genHash();
 					console.log('User', data.username, 'logged in with hash:', hash);
 					res.end(JSON.stringify({
 						status: true,
@@ -109,6 +109,21 @@ function handler (req, res) {
 			});
 		}
 	});
+}
+
+isValidHash = (hash) => {
+    return /^([a-z0-9]{19}155[0-9]{10})/.test(hash);
+}
+
+genHash = () => {
+    // Regex for the hash: /^([a-z0-9]{19}155[0-9]{10})/
+    // Length of random Part: 19
+    // Length of fixed Part: 13 [0-9]
+    // Total size: 256 bit
+    var x = Math.random().toString(36).substring(2);
+    var y = (new Date()).getTime();
+    x = x.repeat(Math.ceil(19 / x.length)).substring(0, 19);
+    return x.concat(y);
 }
 
 authenticate = (socket, hash) => {
@@ -159,12 +174,16 @@ startup = () => {
 
 	app.listen(8080);
 
-	// io.origins('*:*');
-
     io.use((socket, next) => {
         var hash = socket.request._query['hash'];
         var username = socket.request._query['name'];
-        console.log("middleware:", hash, username, socket.id);
+        console.log("Connecting ", username, hash, socket.id);
+
+        if(!isValidHash(hash)){
+            console.log("Hash found invalid, closing connection to", username);
+            // socket.close();
+            return;
+        }
 
         insertUser(username, hash, socket);
 
@@ -340,13 +359,11 @@ startup = () => {
 
     console.log('Server Started\n\n');
     console.log('Implement User kicking by user time out and have a really small timeout like 10s');
-    console.log('Test disconnect Code');
     console.log('Splicing Issue on Disconnect');
     console.log('Removing and reinserting on RTrees?');
     console.log('Somebody move the collision to rely on the rTree.');
 	console.log('Resolve update() -> "UpdateCoords" -> "MapGen" -> draw()');
-    console.log('Items class and make it collide with the RTree');
-    console.log("Handle Invalid Hash and Usernames by implementing auth function.\n\n");
+    console.log('Items class and make it collide with the RTree\n\n');
 
 }
 
