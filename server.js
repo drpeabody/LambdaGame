@@ -81,32 +81,32 @@ function handler (req, res) {
 			// var username = data.username, pwd = data.pwd;
 			res.writeHead(200, {"Content-Type": "application/json"});
 
-            if(isLoggedIn(username)){
-                res.end(JSON.stringify({
-                    status: false,
-                    desc: 'UserName is already Logged in.',
-                }));
-                // return;
-            }
-            else {
-    			mongo.find('users', data, (docs) => {
-    				if(docs.length < 1){
-    					res.end(JSON.stringify({
-    						status: false,
-    						desc: 'Username or Password Incorrect.',
-    					}));
-    				} else {
-    					//Generate User session hash and return for user login auth to work
-    					var hash = Math.random().toString(36).substring(2) + (new Date()).getTime();
-    					console.log('User', data.username, 'logged in with hash:', hash);
-    					res.end(JSON.stringify({
-    						status: true,
-    						desc: 'Logged in Successfully.',
-    						token: hash
-    					}));
-    				}
-    			});
-            }
+            
+			mongo.find('users', data, (docs) => {
+				if(docs.length < 1){
+					res.end(JSON.stringify({
+						status: false,
+						desc: 'Username or Password Incorrect.',
+					}));
+				} else {
+                    if(isLoggedIn(data.username)){
+                        res.end(JSON.stringify({
+                            status: false,
+                            desc: 'UserName is already Logged in.',
+                        }));
+                        return;
+                    }
+
+					//Generate User session hash and return for user login auth to work
+					var hash = Math.random().toString(36).substring(2) + (new Date()).getTime();
+					console.log('User', data.username, 'logged in with hash:', hash);
+					res.end(JSON.stringify({
+						status: true,
+						desc: 'Logged in Successfully.',
+						token: hash
+					}));
+				}
+			});
 		}
 	});
 }
@@ -341,7 +341,6 @@ startup = () => {
     console.log('Server Started\n\n');
     console.log('Implement User kicking by user time out and have a really small timeout like 10s');
     console.log('Test disconnect Code');
-    console.log('Figure out multiple login');
     console.log('Splicing Issue on Disconnect');
     console.log('Removing and reinserting on RTrees?');
     console.log('Somebody move the collision to rely on the rTree.');
