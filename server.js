@@ -280,19 +280,19 @@ startup = () => {
             var res = null;
             if(player.bWDown) {
                 res = coll({x:player.x,y:player.y-speed,w:playerSquareDimension,h:playerSquareDimension}, y, -speed, (s) => s >= 0);
-                if (res.pos!=null && !res.status) y = res.pos;
+                if (res) if (res.pos!=null && !res.status) y = res.pos;
             }
             if(player.bADown) {
                 res = coll({x:player.x-speed,y:player.y,w:playerSquareDimension,h:playerSquareDimension}, x, -speed, (s) => s >= 0);
-                if (res.pos!=null && !res.status) x = res.pos;
+                if (res) if (res.pos!=null && !res.status) x = res.pos;
             }
             if(player.bSDown) {
                 res = coll({x:player.x,y:player.y+speed,w:playerSquareDimension,h:playerSquareDimension}, y, speed, (s) => s <= MapSize - playerSquareDimension);
-                if (res.pos!=null && !res.status) y = res.pos;
+                if (res) if (res.pos!=null && !res.status) y = res.pos;
             }
             if(player.bDDown) {
                 res = coll({x:player.x+speed,y:player.y,w:playerSquareDimension,h:playerSquareDimension}, x, speed, (s) => s <= MapSize - playerSquareDimension);
-                if (res.pos!=null && !res.status) x = res.pos;
+                if (res) if (res.pos!=null && !res.status) x = res.pos;
             }
 
             if(res && res.status) {
