@@ -18,8 +18,8 @@ var noOfSRWOnMap = 3000000; //SRW = Short Range Weapons
 const wSRW = 30;
 const hSRW = 30;
 var mapSquareSize = 2000000 ;
-var playerSquareDimension = 30 ;
-var playerSquareDimensions = playerSquareDimension ;
+var playerRectWidth = 27 ;
+var playerRectHeight = 48 ;
 var MapSize = mapSquareSize ;
 
 /*
@@ -43,7 +43,6 @@ var lowerRangeDimensionDesertBiomes = 45000 ;
 var higherRangeDimensionDesertBiomes = 55000 ;
 // end
 exports.mapSquareSize = mapSquareSize ;
-exports.playerSquareDimension = playerSquareDimension ;
 module.exports = {
 	MapGen: function() {
 

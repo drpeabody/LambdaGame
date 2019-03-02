@@ -85,7 +85,8 @@
 	var wSRW = 30;
 	var hSRW = 30;
 	var correctionFactor = 0.95 ;
-	var playerSquareDimension = 30;
+	var playerRectWidth = 27 ;
+	var playerRectHeight = 48 ;
 	var debug = null;
 
 	canvas = document.getElementById("fuckyou");
@@ -228,13 +229,6 @@
 				}
 			}
 
-			////////////////////////////FOR SRW
-			if(data.weapons["SRW"]){
-				console.log("I got the power.")
-				ctx.fillStyle = "#111144";
-				ctx.fillRect((canvas.width- playerSquareDimension )/2, (canvas.height- playerSquareDimension )/2, wSRW, hSRW);
-			}
-
 			debug = data;
 
 			for(var obj of data.ObjectList)
@@ -293,8 +287,8 @@
 		socket.on('MapGen', function(data) {
 				player.x = data.UserPositionX;
 				player.y = data.UserPositionY;
-				player.cameraX = data.UserPositionX + playerSquareDimension/2 - canvas.width/2;
-				player.cameraY = (data.UserPositionY + playerSquareDimension/2 - canvas.height/2);
+				player.cameraX = data.UserPositionX + playerRectWidth/2 - canvas.width/2;
+				player.cameraY = (data.UserPositionY + playerRectHeight/2 - canvas.height/2);
 
 				draw(data);	
 			});

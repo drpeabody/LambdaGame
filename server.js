@@ -10,7 +10,8 @@ const Weapons = require("./Weapons");
 global.userArray = [];
 var clientSockets = [];
 
-var playerSquareDimension = 30 ;
+var playerRectWidth = 27 ;
+var playerRectHeight = 48 ;
 // var MapSize = Map.mapSquareSize ; // cannot be done rn since map is localized
 var MapSize = 2000000 ;
 
@@ -21,8 +22,8 @@ function User(userName, userHash, x, y)
     	userHash : userHash,
     	x : x,
     	y : y,
-    	l : playerSquareDimension,
-    	b : playerSquareDimension,
+    	h : playerRectHeight,
+    	w : playerRectWidth,
         color : "#441111",
         currentObjects : [],
         weapons : [],
@@ -146,8 +147,8 @@ insertUser = (username, hash, socket) => {
     rtree.insert({
         x: user.x,
         y: user.y,
-        w: playerSquareDimension,
-        h: playerSquareDimension
+        w: playerRectWidth,
+        h: playerRectHeight
     },11);
 
     socket.emit('UserId', {x:user.x, y:user.y, ID:curId});
@@ -242,13 +243,13 @@ startup = () => {
                     // console.log("Player ID : " + np + " Health : " + userArray[np].health + "%");
                     if (userArray[np].health <= 0)
                     {
-                        rtree.remove({x: userArray[np].x, y: userArray[np].y, w: playerSquareDimension, h: playerSquareDimension});
+                        rtree.remove({x: userArray[np].x, y: userArray[np].y, w: playerRectWidth, h: playerRectHeight});
                         userArray[np] = User(userArray[np].userName, userArray[np].userHash, 1000,1000);
                         rtree.insert({
                             x: userArray[np].x,
                             y: userArray[np].y,
-                            w: playerSquareDimension,
-                            h: playerSquareDimension
+                            w: playerRectWidth,
+                            h: playerRectHeight
                         },11);          
                     }
                 }
@@ -279,19 +280,19 @@ startup = () => {
 
             var res = null;
             if(player.bWDown) {
-                res = coll({x:player.x,y:player.y-speed,w:playerSquareDimension,h:playerSquareDimension}, y, -speed, (s) => s >= 0);
+                res = coll({x:player.x,y:player.y-speed,w:playerRectWidth,h:playerRectHeight}, y, -speed, (s) => s >= 0);
                 if (res) if (res.pos!=null && !res.status) y = res.pos;
             }
             if(player.bADown) {
-                res = coll({x:player.x-speed,y:player.y,w:playerSquareDimension,h:playerSquareDimension}, x, -speed, (s) => s >= 0);
+                res = coll({x:player.x-speed,y:player.y,w:playerRectWidth,h:playerRectHeight}, x, -speed, (s) => s >= 0);
                 if (res) if (res.pos!=null && !res.status) x = res.pos;
             }
             if(player.bSDown) {
-                res = coll({x:player.x,y:player.y+speed,w:playerSquareDimension,h:playerSquareDimension}, y, speed, (s) => s <= MapSize - playerSquareDimension);
+                res = coll({x:player.x,y:player.y+speed,w:playerRectWidth,h:playerRectHeight}, y, speed, (s) => s <= MapSize - playerRectHeight);
                 if (res) if (res.pos!=null && !res.status) y = res.pos;
             }
             if(player.bDDown) {
-                res = coll({x:player.x+speed,y:player.y,w:playerSquareDimension,h:playerSquareDimension}, x, speed, (s) => s <= MapSize - playerSquareDimension);
+                res = coll({x:player.x+speed,y:player.y,w:playerRectWidth,h:playerRectHeight}, x, speed, (s) => s <= MapSize - playerRectWidth);
                 if (res) if (res.pos!=null && !res.status) x = res.pos;
             }
 
@@ -302,8 +303,8 @@ startup = () => {
                 }
             }
 
-            rtree.remove({x: oldX, y: oldY, w: playerSquareDimension, h: playerSquareDimension});
-            rtree.insert({x: x, y: y, w: playerSquareDimension, h: playerSquareDimension}, 11);
+            rtree.remove({x: oldX, y: oldY, w: playerRectWidth, h: playerRectHeight});
+            rtree.insert({x: x, y: y, w: playerRectWidth, h: playerRectHeight}, 11);
             userArray[ID-1].x = x;
             userArray[ID-1].y = y;
 
