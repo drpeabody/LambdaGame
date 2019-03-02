@@ -322,6 +322,7 @@ startup = () => {
     console.log('Implement User kicking by user time out and have a really small timeout like 10s');
     console.log('Splicing Issue on Disconnect');
 	console.log('Resolve update() -> "UpdateCoords" -> "MapGen" -> draw()');
+    console.log('3 RTrees 1) static colliders, 2) items 3) Biomes')
     console.log('Items class and make it collide with the RTree\n\n');
 
 }
