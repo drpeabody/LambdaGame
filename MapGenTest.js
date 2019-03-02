@@ -35,7 +35,7 @@ module.exports = {
 		        x: randomValues[currentRandomValue],
 		        y: randomValues[currentRandomValue + 1],
 		        w: Weapons.allWeapons[Weapons.getWeaponID(3)].w,
-		        h: Weapons.allWeapons[Weapons.getWeaponID(3)].w
+		        h: Weapons.allWeapons[Weapons.getWeaponID(3)].h
 		    },3);
 		    currentRandomValue += 2 ;
 		}

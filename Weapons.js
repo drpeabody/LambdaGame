@@ -11,7 +11,7 @@ Initialize all weapons here (Eventually create a file of weapons and use that to
 */
 
 module.exports.allWeapons = [];
-module.exports.allWeapons[0] = Weapon(30,30,5); // 0 = ShortRangeWeapon (Sword)
+module.exports.allWeapons[0] = Weapon(50,50,5); // 0 = ShortRangeWeapon (Sword)
 
 /* end */
 
