@@ -43,22 +43,24 @@ module.exports = {
 		console.timeEnd("Generating-map");
 	    console.log("Generation Done");
 	},
-	getDistance: function(id1,id2)
+	getSqDistance: function(id1,id2)
 	{
-	    return(Math.sqrt((userArray[id1].x-userArray[id2].x)^2+(userArray[id1].y-userArray[id2].y)^2));
+		var dx = userArray[id1].x-userArray[id2].x;
+		var dy = userArray[id1].y-userArray[id2].y;
+	    return dx*dx + dy*dy;
 	},
 	// naive function rn, replace with better algo
 	findNearestPlayer: function(ID)
 	{
 	    var minID = -1 ;
-	    var minDist = mapSquareSize ;
+	    var minDist = mapSquareSize*mapSquareSize ;
 	    for (var i = 0 ; i < userArray.length ; i++)
 	    {
 	        if (i != ID)
 	        {
-	            if (minDist > module.exports.getDistance(ID,i))
+	            if (minDist > module.exports.getSqDistance(ID,i))
 	            {
-	                minDist = module.exports.getDistance(ID,i) ;
+	                minDist = module.exports.getSqDistance(ID,i);
 	                minID = i ;
 	            }
 	        }
