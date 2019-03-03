@@ -203,8 +203,11 @@ startup = () => {
                     'login ever again, as the server will report he is already logged in.');
             }
             else {
-                console.log('Disconnected', clientSockets[socket.id]);
-                // userArray.splice(userArray.findIndex((s) => s.userHash === clientSockets[socket.id]), 1);
+                var idx = userArray.findIndex((s) => s.userHash === clientSockets[socket.id]);
+                var user = userArray[idx];
+                rtree.remove({x: user.x, y: user.y, w: playerRectWidth, h: playerRectHeight});
+                userArray[idx] = {};
+                console.log('Disconnected', clientSockets[socket.id], user.userName);
                 delete clientSockets[socket.id];
             }
         });
@@ -319,10 +322,9 @@ startup = () => {
 	});
 
     console.log('Server Started\n\n');
-    console.log('Implement User kicking by user time out and have a really small timeout like 10s');
-    console.log('Splicing Issue on Disconnect');
 	console.log('Resolve update() -> "UpdateCoords" -> "MapGen" -> draw()');
     console.log('3 RTrees 1) static colliders, 2) items 3) Biomes')
+    console.log('Merge Client Sockets and User Array into single array');
     console.log('Items class and make it collide with the RTree\n\n');
 
 }
