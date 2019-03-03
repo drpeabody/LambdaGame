@@ -181,7 +181,7 @@
 	connect = (username, hash) => {
 
 		// socket = io(url, {query: "hash=" + hash + "&name=" + username});
-		socket = io(url, {query: "hash=" + hash + "&name=" + username});
+		socket = io(url, {query: "hash=" + hash + "&name=" + username, 'reconnection': false});
 
 		socket.on('UserId', function(plr){
 			var elem = g("login-form");
