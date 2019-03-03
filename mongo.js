@@ -7,7 +7,7 @@ module.exports = {
 	insertOne: (collection, doc, callback) => {
 		this.db.collection(collection).insertOne(doc, function(err, result) {
 			if(!err) {
-				console.log("Inserted document(s): ", doc);
+				// console.log("Inserted document(s): ", doc);
 				if(callback) callback(result);
 			}
 			else console.log(err);
@@ -16,7 +16,7 @@ module.exports = {
 	find: (collection, doc, callback) => {
 		this.db.collection(collection).find(doc).toArray(function(err, docs) {
 			if(!err) {
-				console.log("Found "+docs.length+" document(s).");
+				// console.log("Found "+docs.length+" document(s).");
 				if(callback) callback(docs);
 			}
 			else console.log(err);
@@ -25,7 +25,7 @@ module.exports = {
 	updateOne: (collection, query, modifier, callback) => {
 	  	this.db.collection(collection).updateOne(query, modifier, function(err, result) {
 			if(!err) {
-				console.log("Matched " + result.matchedCount + ", modified " + result.modifiedCount + " documents.");
+				// console.log("Matched " + result.matchedCount + ", modified " + result.modifiedCount + " documents.");
 				if(callback) callback(result);
 			}
 			else console.log(err);
@@ -34,7 +34,7 @@ module.exports = {
 	deleteOne: (collection, query, callback) => {
 	  	this.db.collection(collection).deleteOne(query, function(err, result) {
 			if(!err) {
-				console.log("Removed " + result.result.n + " documents.");
+				// console.log("Removed " + result.result.n + " documents.");
 				if(callback) callback(result);
 			}
 			else console.log(err);

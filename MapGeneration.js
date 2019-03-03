@@ -42,8 +42,10 @@ var DesertBiomes = 5000 ;
 var lowerRangeDimensionDesertBiomes = 45000 ;
 var higherRangeDimensionDesertBiomes = 55000 ;
 // end
-exports.mapSquareSize = mapSquareSize ;
 module.exports = {
+	getPlayerWidth: () => playerRectWidth,
+	getPlayerHieght: () => playerRectHeight,
+	getMapSize: () => mapSquareSize,
 	MapGen: function() {
 
     	console.time("Generating-map");

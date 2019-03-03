@@ -2,20 +2,20 @@ const app = require('http').createServer(handler);
 const io = require('socket.io')(app);
 const vm = require('vm');
 const stdin = process.openStdin();
-var fs = require('fs');
+const fs = require('fs');
 const RTree = require("rtree")
 
-var mongo = require('./mongo.js');
+const mongo = require('./mongo.js');
 const Map = require("./MapGenTest");
 const Weapons = require("./Weapons");
 
 global.userArray = [];
 var clientSockets = [];
 
-var playerRectWidth = 27 ;
-var playerRectHeight = 48 ;
+var playerRectWidth = Map.getPlayerWidth();
+var playerRectHeight = Map.getPlayerHieght();
 // var MapSize = Map.mapSquareSize ; // cannot be done rn since map is localized
-var MapSize = 2000000 ;
+var MapSize = Map.getMapSize();
 
 function User(userName, userHash, x, y)
 {
@@ -30,7 +30,8 @@ function User(userName, userHash, x, y)
         currentObjects : [],
         weapons : [],
         currentWeapon : null,
-        health : 100
+        health : 100,
+        ticksSinceLastAttack: 0,
     }
 }
 
@@ -81,9 +82,8 @@ function handler (req, res) {
 			});
 		}
 		else if(req.url === '/login'){
-			// var username = data.username, pwd = data.pwd;
-			res.writeHead(200, {"Content-Type": "application/json"});
 
+			res.writeHead(200, {"Content-Type": "application/json"});
             
 			mongo.find('users', data, (docs) => {
 				if(docs.length < 1){
@@ -102,7 +102,7 @@ function handler (req, res) {
 
 					//Generate User session hash and return for user login auth to work
 					var hash = genHash();
-					console.log('User', data.username, 'logged in with hash:', hash);
+					console.log('User', data.username, ' initted with hash:', hash);
 					res.end(JSON.stringify({
 						status: true,
 						desc: 'Logged in Successfully.',
@@ -141,12 +141,8 @@ insertUser = (username, hash, socket) => {
     var user = User(username, hash, 1000,1000);
     var curId = userArray.push(user);
 
-    console.log("### CURRENT USER DETAILS : USER #" + (curId+1) + " ###");
-    console.log("Username = " + user.userName);
-    console.log("Hash = " + user.userHash); 
-    console.log("UserPositionX = " + user.x);
-    console.log("UserPositionY = " + user.y);
-    rtree.insert({
+    console.log("USER", user.userName, "("+curId+") @", "("+user.x+", "+user.y+")", hash);
+    rtree.insert({ 
         x: user.x,
         y: user.y,
         w: playerRectWidth,
@@ -216,7 +212,6 @@ startup = () => {
     }); 
 
 	io.on('connection', function (socket) {
-		console.log('Connected');
 
         socket.on('disconnect', function () {
             if(!clientSockets[socket.id]) {
@@ -236,45 +231,47 @@ startup = () => {
         });
 
 
-		socket.on('UpdateCoords', function(player) {
+		socket.on('tick', function(player) {
             if(!authenticate(socket, player.hash)){
                 return;
             }
             
 			var ID = player.ID;
-            var speed = 5;
+            var speed = 5, attackTimeout = 20;
 
             var x = userArray[ID-1].x, oldX = x;
             var y = userArray[ID-1].y, oldY = y;
 
             var currentObjects = userArray[ID-1].currentObjects;
 
-            if (player.mouseDown && userArray.length > 1)
-            {
-                var np = Map.findNearestPlayer(ID-1), factor = 1;
-                if (userArray[ID-1].currentWeapon != null)
-                {
-                    factor = userArray[ID-1].currentWeapon.damage ;
-                }
-                if (np >= 0 && userArray[np].health > 0)
-                {
-                    userArray[np].health -= factor ;
+            userArray[ID-1].ticksSinceLastAttack++;
 
-                    if (userArray[np].health <= 0)
-                    {
-                        rtree.remove({x: userArray[np].x, y: userArray[np].y, w: playerRectWidth, h: playerRectHeight});
-                        userArray[np] = User(userArray[np].userName, userArray[np].userHash, 1000,1000);
-                        rtree.insert({
-                            x: userArray[np].x,
-                            y: userArray[np].y,
-                            w: playerRectWidth,
-                            h: playerRectHeight
-                        },11);          
+            if (player.mouseDown) {
+                if(userArray[ID-1].ticksSinceLastAttack > attackTimeout){
+                    userArray[ID-1].ticksSinceLastAttack = 0;
+                    var np = Map.findNearestPlayer(ID-1), factor = 1;
+                    if (userArray[ID-1].currentWeapon != null) {
+                        factor = userArray[ID-1].currentWeapon.damage ;
+                    }
+                    if (np >= 0 && userArray[np].health > 0) {
+                        userArray[np].health -= factor;
+                        console.log('Add an attack indicator here');
+
+                        if (userArray[np].health <= 0) {
+                            rtree.remove({x: userArray[np].x, y: userArray[np].y, w: playerRectWidth, h: playerRectHeight});
+                            userArray[np] = User(userArray[np].userName, userArray[np].userHash, 1000,1000);
+                            rtree.insert({
+                                x: userArray[np].x,
+                                y: userArray[np].y,
+                                w: playerRectWidth,
+                                h: playerRectHeight
+                            },11);          
+                        }
                     }
                 }
             }
-            if (userArray[ID-1].health <= 0)
-            {
+
+            if (userArray[ID-1].health <= 0) {
                 // Remove from rtree
                 socket.emit('UserId', {x:userArray[ID-1].x, y:userArray[ID-1].y, ID:(ID-1)})                
             }

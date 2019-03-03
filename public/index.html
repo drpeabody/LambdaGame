@@ -166,7 +166,31 @@
 	        hash: hash
 	    }
 	}
-	var user = null  ;
+
+	setEventListeners = () => {
+		document.onkeydown = (e) => {
+			// console.log("Key Pressed " + e.key);
+			var key = e.key ;
+			if ((key === 'w')||(key === 'W')) player.bWDown = true ;
+			if ((key === 'a')||(key === 'A')) player.bADown = true ;
+			if ((key === 's')||(key === 'S')) player.bSDown = true ;
+			if ((key === 'd')||(key === 'D')) player.bDDown = true ;
+		}
+
+		document.onkeyup = (e) => {
+			var key = e.key ;
+			if ((key === 'w')||(key === 'W')) player.bWDown = false ;
+			if ((key === 'a')||(key === 'A')) player.bADown = false ;
+			if ((key === 's')||(key === 'S')) player.bSDown = false ;
+			if ((key === 'd')||(key === 'D')) player.bDDown = false ;
+		}
+		document.onmousedown = (e) => {
+			player.mouseDown = true ;
+		}
+		document.onmouseup = (e) => {
+			player.mouseDown = false ;
+		}
+	}
 
 	connect = (username, hash) => {
 
@@ -181,33 +205,8 @@
 			canvas.height = window.innerHeight * correctionFactor;
 
             player = User(plr.x, plr.y, plr.cameraX, plr.cameraY, plr.ID, canvas.width, canvas.height, hash);
-            // canvas = document.getElementById("fuckyou");
-			
-            // curId = plr.ID ;
-            document.onkeydown = (e) => {
-				// console.log("Key Pressed " + e.key);
-				var key = e.key ;
-				if ((key === 'w')||(key === 'W')) player.bWDown = true ;
-				if ((key === 'a')||(key === 'A')) player.bADown = true ;
-				if ((key === 's')||(key === 'S')) player.bSDown = true ;
-				if ((key === 'd')||(key === 'D')) player.bDDown = true ;
-			}
-
-			document.onkeyup = (e) => {
-				var key = e.key ;
-				if ((key === 'w')||(key === 'W')) player.bWDown = false ;
-				if ((key === 'a')||(key === 'A')) player.bADown = false ;
-				if ((key === 's')||(key === 'S')) player.bSDown = false ;
-				if ((key === 'd')||(key === 'D')) player.bDDown = false ;
-			}
-			document.onmousedown = (e) => {
-				player.mouseDown = true ;
-				console.log("Mouse clicked");
-			}
-			document.onmouseup = (e) => {
-				player.mouseDown = false ;
-				console.log("Mouse clicked");
-			}
+            
+            setEventListeners();
 			update();
 
 		});
@@ -278,7 +277,7 @@
 			//Sync with server - All Socet.emit here
 			//Process input
 
-			socket.emit('UpdateCoords', player);
+			socket.emit('tick', player);
 			localPlayer.count(player);
 			
 			
