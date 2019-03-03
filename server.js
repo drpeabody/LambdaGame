@@ -3,10 +3,12 @@ const io = require('socket.io')(app);
 const vm = require('vm');
 const stdin = process.openStdin();
 var fs = require('fs');
-var mongo = require('./mongo.js');
 const RTree = require("rtree")
+
+var mongo = require('./mongo.js');
 const Map = require("./MapGenTest");
 const Weapons = require("./Weapons");
+
 global.userArray = [];
 var clientSockets = [];
 
@@ -154,6 +156,27 @@ insertUser = (username, hash, socket) => {
     socket.emit('UserId', {x:user.x, y:user.y, ID:curId});
 }
 
+coll = (rectangle, pos, speed, pred) => {
+    if (pred(pos + speed)){
+
+        var willCollide = false;
+        var arr = rtree.search(rectangle);
+        
+        if(arr.length > 1) willCollide = true;// Collides with an object other than itself
+        else pos += speed;
+
+        return {
+            pos: pos,
+            status: willCollide,
+            arr: arr,
+            rect: rectangle
+        }
+    } else return {
+        pos: pos,
+        status: false
+    }
+}
+
 startup = () => {
 	console.log('Attempting to Start Mongo Server');
 
@@ -215,27 +238,20 @@ startup = () => {
 
 		socket.on('UpdateCoords', function(player) {
             if(!authenticate(socket, player.hash)){
-                socket.emit('MapGen', {});
                 return;
             }
             
-            player = player;
-			emitObjects = [];
 			var ID = player.ID;
             var speed = 5;
 
-            x = userArray[ID-1].x;
-            y = userArray[ID-1].y;
-            var oldX = x ;
-            var oldY = y ;
+            var x = userArray[ID-1].x, oldX = x;
+            var y = userArray[ID-1].y, oldY = y;
 
-            var currentObjects = userArray[ID-1].currentObjects ;
+            var currentObjects = userArray[ID-1].currentObjects;
 
             if (player.mouseDown && userArray.length > 1)
             {
-                var np = Map.findNearestPlayer(ID-1);
-                // console.log(np);
-                var factor = 1 ;
+                var np = Map.findNearestPlayer(ID-1), factor = 1;
                 if (userArray[ID-1].currentWeapon != null)
                 {
                     factor = userArray[ID-1].currentWeapon.damage ;
@@ -243,7 +259,7 @@ startup = () => {
                 if (np >= 0 && userArray[np].health > 0)
                 {
                     userArray[np].health -= factor ;
-                    // console.log("Player ID : " + np + " Health : " + userArray[np].health + "%");
+
                     if (userArray[np].health <= 0)
                     {
                         rtree.remove({x: userArray[np].x, y: userArray[np].y, w: playerRectWidth, h: playerRectHeight});
@@ -261,24 +277,6 @@ startup = () => {
             {
                 // Remove from rtree
                 socket.emit('UserId', {x:userArray[ID-1].x, y:userArray[ID-1].y, ID:(ID-1)})                
-            }
-
-            var coll = (rectangle, pos, speed, pred) => {
-                if (pred(pos + speed)){
-
-                    var willCollide = false;
-                    var arr = rtree.search(rectangle);
-                    
-                    if(arr.length > 1) willCollide = true;// Collides with an object other than itself
-                    else pos += speed;
-
-                    return {
-                        pos: pos,
-                        status: willCollide,
-                        arr: arr,
-                        rect: rectangle
-                    }
-                }
             }
 
             var res = null;
@@ -311,12 +309,12 @@ startup = () => {
             userArray[ID-1].x = x;
             userArray[ID-1].y = y;
 
-            var emitObjects=[];//The list of objects within user's view
-           	emitObjects = emitObjects.concat(rtree.search({x:player.cameraX,y:player.cameraY,w:player.canvasWidth,h:player.canvasHeight},true));
-            //console.log(rtree.search({x:player.cameraX,y:player.cameraY,w:player.canvasWidth,h:player.canvasHeight},true));
+            //The list of objects within user's view
+           	var emitObjects = rtree.search({x:player.cameraX,y:player.cameraY,w:player.canvasWidth,h:player.canvasHeight},true);
+            
             userArray[ID-1].currentObjects = emitObjects.slice();
+
             socket.emit('MapGen', {ObjectList : emitObjects,  UserPositionX : x, UserPositionY : y, curId : ID, weapons : userArray[ID-1].weapons});
-            // console.log('Emitted.', emitObjects.length);
 		});
 
 	});
@@ -325,6 +323,10 @@ startup = () => {
 	console.log('Resolve update() -> "UpdateCoords" -> "MapGen" -> draw()');
     console.log('3 RTrees 1) static colliders, 2) items 3) Biomes')
     console.log('Merge Client Sockets and User Array into single array');
+    console.log('Implement a Server and Client timeout after you press mouse button');
+    console.log('Implement Damage Indicator client Side');
+    console.log('Eliminate findNearestPlayer() and use a range instead');
+    console.log('Why is there slicing on line 315?');
     console.log('Items class and make it collide with the RTree\n\n');
 
 }
