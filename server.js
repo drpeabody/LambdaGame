@@ -32,6 +32,8 @@ function User(userName, userHash, x, y)
         currentWeapon : null,
         health : 100,
         ticksSinceLastAttack: 0,
+        isAttacked : false,
+        attackPartner : null
     }
 }
 
@@ -243,13 +245,17 @@ startup = () => {
             var y = userArray[ID-1].y, oldY = y;
 
             var currentObjects = userArray[ID-1].currentObjects;
-
+            var np = ID-1 ;
             userArray[ID-1].ticksSinceLastAttack++;
 
             if (player.mouseDown) {
                 if(userArray[ID-1].ticksSinceLastAttack > attackTimeout){
                     userArray[ID-1].ticksSinceLastAttack = 0;
-                    var np = Map.findNearestPlayer(ID-1), factor = 1;
+                    np = Map.findNearestPlayer(ID-1), factor = 1;
+                    userArray[ID-1].isAttacked = true ;
+                    userArray[ID-1].attackPartner = np ;
+                    userArray[np].attackPartner = ID-1 ;
+                    userArray[np].isAttacked = true ;
                     if (userArray[ID-1].currentWeapon != null) {
                         factor = userArray[ID-1].currentWeapon.damage ;
                     }
@@ -311,7 +317,7 @@ startup = () => {
             
             userArray[ID-1].currentObjects = emitObjects.slice();
 
-            socket.emit('MapGen', {ObjectList : emitObjects,  UserPositionX : x, UserPositionY : y, curId : ID, weapons : userArray[ID-1].weapons});
+            socket.emit('MapGen', {ObjectList : emitObjects,  UserPositionX : x, UserPositionY : y, curId : ID, weapons : userArray[ID-1].weapons, health : userArray[ID-1].health, isAttacked : userArray[ID-1].isAttacked, attackPartner : userArray[ID-1].attackPartner, partnerHealth : userArray[np].health, partnerX : userArray[np].x, partnerY : userArray[np].y});
 		});
 
 	});

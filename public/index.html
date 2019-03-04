@@ -159,7 +159,7 @@
 		}
 	}
 
-	function User(x,y,cameraX, cameraY, id, width, height, hash)	{
+	function User(x,y,cameraX, cameraY, id, width, height, hash, health, isAttacked, attackPartner)	{
 		return {
 	        x : x ,
 	        y : y ,
@@ -173,7 +173,13 @@
 	        ID: id,
 	        canvasWidth: width,
 	        canvasHeight: height,
-	        hash: hash
+	        hash: hash,
+	        health : 100,
+	        isAttacked : false,
+	        attackPartner : null,
+	        partnerHealth : 100,
+	        partnerX : null,
+	        partnerY : null
 	    }
 	}
 
@@ -281,7 +287,16 @@
 						break ;
 				}
 			}
-
+			if (player.isAttacked) // Generate health bar of player and foe
+			{
+				console.log(player.partnerX);
+				ctx.fillStyle = "#FF0000" ;
+				ctx.fillRect(player.x - player.cameraX ,player.y - player.cameraY - 30, 0.01*playerRectWidth*player.health, 10);
+				ctx.fillRect(player.partnerX - player.cameraX,player.partnerY - player.cameraY - 30, 0.01*playerRectWidth*player.partnerHealth, 10);
+				ctx.fillStyle = "#000000" ;
+				ctx.fillRect(player.x - player.cameraX + 0.01*playerRectWidth*player.health,player.y - player.cameraY - 30, 0.01*playerRectWidth*(100-player.health), 10);
+				ctx.fillRect(player.partnerX - player.cameraX + 0.01*playerRectWidth*player.partnerHealth,player.partnerY - player.cameraY - 30, 0.01*playerRectWidth*(100-player.partnerHealth), 10);
+			}
 		}
 		update = () => {
 			//Sync with server - All Socet.emit here
@@ -298,7 +313,12 @@
 				player.y = data.UserPositionY;
 				player.cameraX = data.UserPositionX + playerRectWidth/2 - canvas.width/2;
 				player.cameraY = (data.UserPositionY + playerRectHeight/2 - canvas.height/2);
-
+				player.isAttacked = data.isAttacked ;
+				player.attackPartner = data.attackPartner ;
+				player.health = data.health ;
+				player.partnerHealth = data.partnerHealth ;
+				player.partnerX = data.partnerX ;
+				player.partnerY = data.partnerY ;
 				draw(data);	
 			});
 	}
