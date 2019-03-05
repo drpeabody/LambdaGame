@@ -33,7 +33,8 @@ function User(userName, userHash, x, y)
         health : 100,
         ticksSinceLastAttack: 0,
         isAttacked : false,
-        attackPartner : null
+        attackPartner : null,
+        np : null
     }
 }
 
@@ -142,7 +143,7 @@ isLoggedIn = (username) => {
 insertUser = (username, hash, socket) => {
     var user = User(username, hash, 1000,1000);
     var curId = userArray.push(user);
-
+    userArray[curId-1].np = curId-1 ;
     console.log("USER", user.userName, "("+curId+") @", "("+user.x+", "+user.y+")", hash);
     rtree.insert({ 
         x: user.x,
@@ -245,30 +246,29 @@ startup = () => {
             var y = userArray[ID-1].y, oldY = y;
 
             var currentObjects = userArray[ID-1].currentObjects;
-            var np = ID-1 ;
             userArray[ID-1].ticksSinceLastAttack++;
 
             if (player.mouseDown) {
                 if(userArray[ID-1].ticksSinceLastAttack > attackTimeout){
                     userArray[ID-1].ticksSinceLastAttack = 0;
-                    np = Map.findNearestPlayer(ID-1), factor = 1;
+                    userArray[ID-1].np = Map.findNearestPlayer(ID-1), factor = 1;
                     userArray[ID-1].isAttacked = true ;
-                    userArray[ID-1].attackPartner = np ;
-                    userArray[np].attackPartner = ID-1 ;
-                    userArray[np].isAttacked = true ;
+                    userArray[ID-1].attackPartner = userArray[ID-1].np ;
+                    userArray[userArray[ID-1].np].attackPartner = ID-1 ;
+                    userArray[userArray[ID-1].np].isAttacked = true ;
                     if (userArray[ID-1].currentWeapon != null) {
                         factor = userArray[ID-1].currentWeapon.damage ;
                     }
-                    if (np >= 0 && userArray[np].health > 0) {
-                        userArray[np].health -= factor;
+                    if (userArray[ID-1].np >= 0 && userArray[userArray[ID-1].np].health > 0) {
+                        userArray[userArray[ID-1].np].health -= factor;
                         console.log('Add an attack indicator here');
 
-                        if (userArray[np].health <= 0) {
-                            rtree.remove({x: userArray[np].x, y: userArray[np].y, w: playerRectWidth, h: playerRectHeight});
-                            userArray[np] = User(userArray[np].userName, userArray[np].userHash, 1000,1000);
+                        if (userArray[userArray[ID-1].np].health <= 0) {
+                            rtree.remove({x: userArray[userArray[ID-1].np].x, y: userArray[userArray[ID-1].np].y, w: playerRectWidth, h: playerRectHeight});
+                            userArray[userArray[ID-1].np] = User(userArray[userArray[ID-1].np].userName, userArray[userArray[ID-1].np].userHash, 1000,1000);
                             rtree.insert({
-                                x: userArray[np].x,
-                                y: userArray[np].y,
+                                x: userArray[userArray[ID-1].np].x,
+                                y: userArray[userArray[ID-1].np].y,
                                 w: playerRectWidth,
                                 h: playerRectHeight
                             },11);          
@@ -317,7 +317,7 @@ startup = () => {
             
             userArray[ID-1].currentObjects = emitObjects.slice();
 
-            socket.emit('MapGen', {ObjectList : emitObjects,  UserPositionX : x, UserPositionY : y, curId : ID, weapons : userArray[ID-1].weapons, health : userArray[ID-1].health, isAttacked : userArray[ID-1].isAttacked, attackPartner : userArray[ID-1].attackPartner, partnerHealth : userArray[np].health, partnerX : userArray[np].x, partnerY : userArray[np].y});
+            socket.emit('MapGen', {ObjectList : emitObjects,  UserPositionX : x, UserPositionY : y, curId : ID, weapons : userArray[ID-1].weapons, health : userArray[ID-1].health, isAttacked : userArray[ID-1].isAttacked, attackPartner : userArray[ID-1].attackPartner, partnerHealth : userArray[userArray[ID-1].np].health, partnerX : userArray[userArray[ID-1].np].x, partnerY : userArray[userArray[ID-1].np].y});
 		});
 
 	});
