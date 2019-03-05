@@ -6,3 +6,5 @@
 4) `npm run server`
 
 Don't forget to change the url variable in index.html to localhost or whatever IP address the server is running on. 
+
+url = 'http://x:8080'
