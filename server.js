@@ -34,7 +34,8 @@ function User(userName, userHash, x, y)
         ticksSinceLastAttack: 0,
         isAttacked : false,
         attackPartner : null,
-        np : null
+        np : null,
+        attackTime : null
     }
 }
 
@@ -248,8 +249,9 @@ startup = () => {
             var currentObjects = userArray[ID-1].currentObjects;
             userArray[ID-1].ticksSinceLastAttack++;
 
-            if (player.mouseDown) {
+            if (player.mouseDown && Map.findNearestPlayer(ID-1) != -1) {
                 if(userArray[ID-1].ticksSinceLastAttack > attackTimeout){
+                    userArray[ID-1].attackTime = Date.now();
                     userArray[ID-1].ticksSinceLastAttack = 0;
                     userArray[ID-1].np = Map.findNearestPlayer(ID-1), factor = 1;
                     userArray[ID-1].isAttacked = true ;
@@ -266,6 +268,9 @@ startup = () => {
                         if (userArray[userArray[ID-1].np].health <= 0) {
                             rtree.remove({x: userArray[userArray[ID-1].np].x, y: userArray[userArray[ID-1].np].y, w: playerRectWidth, h: playerRectHeight});
                             userArray[userArray[ID-1].np] = User(userArray[userArray[ID-1].np].userName, userArray[userArray[ID-1].np].userHash, 1000,1000);
+                            userArray[userArray[ID-1].np].np = userArray[ID-1].np ;
+                            userArray[userArray[ID-1].np].attackPartner = null ;
+                            userArray[userArray[ID-1].np].isAttacked = false ;
                             rtree.insert({
                                 x: userArray[userArray[ID-1].np].x,
                                 y: userArray[userArray[ID-1].np].y,
@@ -281,7 +286,17 @@ startup = () => {
                 // Remove from rtree
                 socket.emit('UserId', {x:userArray[ID-1].x, y:userArray[ID-1].y, ID:(ID-1)})                
             }
-
+            if (userArray[ID-1].attackTime)
+            {
+                if (Date.now() - userArray[ID-1].attackTime >= 5000)
+                {
+                    userArray[ID-1].np = ID-1;
+                    userArray[ID-1].isAttacked = false ;
+                    userArray[ID-1].attackPartner = null ;
+                    userArray[userArray[ID-1].np].attackPartner = null ;
+                    userArray[userArray[ID-1].np].isAttacked = false ;
+                }
+            }
             var res = null;
             if(player.bWDown) {
                 res = coll({x:player.x,y:player.y-speed,w:playerRectWidth,h:playerRectHeight}, y, -speed, (s) => s >= 0);
