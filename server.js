@@ -1,121 +1,190 @@
 const app = require('http').createServer(handler);
 const io = require('socket.io')(app);
-const MongoClient = require('mongodb').MongoClient;
-const mongod = require('mongod');
-// const exec = require('child_process').exec;
-const mongo_url = "mongodb://localhost:27017";
-const db_name = 'lambda';
 const vm = require('vm');
 const stdin = process.openStdin();
-var db_client;
-var db;
-const server = new mongod({ port: 27017, dbpath: 'data' });
-var fs = require('fs');
+const fs = require('fs');
+const RTree = require("rtree")
 
-var listOfObjects = [];
+const mongo = require('./mongo.js');
+const Map = require("./MapGenTest");
+const Weapons = require("./Weapons");
 
-var userNames=[];
-var userHashes=[];
-var userPositionsX = [];
-var userPositionsY = [];
-var userWindowHeight = [];
-var userWindowWidth = []; //Get rid of this
+global.userArray = [];
+var clientSockets = [];
 
-// var ClientSchema = {
-// 	socket: socket,
-// 	userName: 'ewd',
-// 	position: { x: x, y: y },
-// 	hash: 'q3r234r23'
-// }
+var playerRectWidth = Map.getPlayerWidth();
+var playerRectHeight = Map.getPlayerHieght();
+// var MapSize = Map.mapSquareSize ; // cannot be done rn since map is localized
+var MapSize = Map.getMapSize();
 
-var mapSquareSize = 100000 ;
+function User(userName, userHash, x, y)
+{
+	return {
+        userName : userName,
+    	userHash : userHash,
+    	x : x,
+    	y : y,
+    	h : playerRectHeight,
+    	w : playerRectWidth,
+        color : "#441111",
+        currentObjects : [],
+        weapons : [],
+        currentWeapon : null,
+        health : 100,
+        ticksSinceLastAttack: 0,
+        isAttacked : false,
+        attackPartner : null,
+        np : null,
+        attackTime : null
+    }
+}
+
+
+global.rtree = RTree(100);
+
 function handler (req, res) {
 	var headers = {
 	    'Access-Control-Allow-Origin': '*',
 	    'Access-Control-Allow-Methods': 'OPTIONS, POST, GET',
 	    'Access-Control-Max-Age': 2592000, // 30 days
-	    // 'Content-Type': 'contentType'
+	    // 'Content-Type': 'application/x-www-form-urlencoded'
 	};
 
-	res.writeHead(200, headers);
-	if(req.url === '/')
-		fs.readFile('public/index.html', function (err, data) {
-		    if (err) {
-		      res.writeHead(500);
-		      return res.end('Error loading index.html');
-		    }
-
-		    res.end(data);
-		});
-
-}
-
-mongoInsertOne = (collection, doc, callback) => {
-	db.collection(collection).insertOne(doc, function(err, result) {
-		if(!err) {
-			console.log("Inserted document(s): ", doc);
-			if(callback) callback(result);
+	let data = undefined;
+	req.on('data', chunk => {
+		try {
+			data = JSON.parse(chunk);
+		} catch (err) {
+			data = chunk.toString();
 		}
-		else console.log(err);
+	});
+
+	req.on('end', () => {
+		res.writeHead(200, headers);
+		if(req.url === '/'){
+			fs.readFile('public/index.html', function (err, data) {
+			    if (err) {
+			      res.writeHead(500);
+			      return res.end('Error loading index.html');
+			    }
+
+			    res.end(data);
+			});
+		}
+		else if(req.url === '/register'){
+			var username = data.username, pwd = data.pwd;
+			res.writeHead(200, {"Content-Type": "application/json"});
+			
+			mongo.find('users', { username: username }, (docs) => {
+				if(docs.length > 0){
+					res.end('Username Already Exists');
+				}
+				else {
+					mongo.insertOne('users', data);
+					res.end('Registered');
+				}			
+			});
+		}
+		else if(req.url === '/login'){
+
+			res.writeHead(200, {"Content-Type": "application/json"});
+            
+			mongo.find('users', data, (docs) => {
+				if(docs.length < 1){
+					res.end(JSON.stringify({
+						status: false,
+						desc: 'Username or Password Incorrect.',
+					}));
+				} else {
+                    if(isLoggedIn(data.username)){
+                        res.end(JSON.stringify({
+                            status: false,
+                            desc: 'UserName is already Logged in.',
+                        }));
+                        return;
+                    }
+
+					//Generate User session hash and return for user login auth to work
+					var hash = genHash();
+					console.log('User', data.username, ' initted with hash:', hash);
+					res.end(JSON.stringify({
+						status: true,
+						desc: 'Logged in Successfully.',
+						token: hash
+					}));
+				}
+			});
+		}
 	});
 }
-mongoFind = (collection, doc, callback) => {
-	db.collection(collection).find(doc).toArray(function(err, docs) {
-		if(!err) {
-			console.log("Found "+docs.length+" document(s).");
-			if(callback) callback(docs);
-		}
-		else console.log(err);
-	});
-}
-mongoUpdateOne = (collection, query, modifier, callback) => {
-  	db.collection(collection).updateOne(query, modifier, function(err, result) {
-		if(!err) {
-			console.log("Matched " + result.matchedCount + ", modified " + result.modifiedCount + " documents.");
-			if(callback) callback(result);
-		}
-		else console.log(err);
-  	});  
-}
-mongoDeleteOne = (collection, query, callback) => {
-  	db.collection(collection).deleteOne(query, function(err, result) {
-		if(!err) {
-			console.log("Removed " + result.result.n + " documents.");
-			if(callback) callback(result);
-		}
-		else console.log(err);
-  	});    
+
+isValidHash = (hash) => {
+    return /^([a-z0-9]{19}155[0-9]{10})/.test(hash);
 }
 
+genHash = () => {
+    // Regex for the hash: /^([a-z0-9]{19}155[0-9]{10})/
+    // Length of random Part: 19
+    // Length of fixed Part: 13 [0-9]
+    // Total size: 256 bit
+    var x = Math.random().toString(36).substring(2);
+    var y = (new Date()).getTime();
+    x = x.repeat(Math.ceil(19 / x.length)).substring(0, 19);
+    return x.concat(y);
+}
+
+authenticate = (socket, hash) => {
+    return (clientSockets[socket.id] === hash);
+}
+
+isLoggedIn = (username) => {
+    return !(!(userArray.find((s) => s.userName === username)));
+}
+
+insertUser = (username, hash, socket) => {
+    var user = User(username, hash, 1000,1000);
+    var curId = userArray.push(user);
+    userArray[curId-1].np = curId-1 ;
+    console.log("USER", user.userName, "("+curId+") @", "("+user.x+", "+user.y+")", hash);
+    rtree.insert({ 
+        x: user.x,
+        y: user.y,
+        w: playerRectWidth,
+        h: playerRectHeight
+    },11);
+
+    socket.emit('UserId', {x:user.x, y:user.y, ID:curId});
+}
+
+coll = (rectangle, pos, speed, pred) => {
+    if (pred(pos + speed)){
+
+        var willCollide = false;
+        var arr = rtree.search(rectangle);
+        
+        if(arr.length > 1) willCollide = true;// Collides with an object other than itself
+        else pos += speed;
+
+        return {
+            pos: pos,
+            status: willCollide,
+            arr: arr,
+            rect: rectangle
+        }
+    } else return {
+        pos: pos,
+        status: false
+    }
+}
 
 startup = () => {
 	console.log('Attempting to Start Mongo Server');
 
-	process.on('exit', () => {
-		if(!db_client) {
-			console.log('Closing Mongo DB...');
-			db_client.close();
-		}
-	});
+	process.on('exit', mongo.exit);
 
-	server.open((err) => {
-		if(err){
-			if(String(err).endsWith('SocketException: Address already in use')) {
-				console.log('Mongo Server already Running');
-			}
-			else console.log('Error while Starting Mongo Server:\n'+err);
-		}
-		else console.log('Mongo Server Started');
+	mongo.start();
 
-		db_client = new MongoClient(mongo_url, { useNewUrlParser: true });
-		db_client.connect((err) => {
-			if(err) console.log(err);
-			else {
-				console.log('MongoDB connected to:' + mongo_url + '/' + db_name);
-				db = db_client.db(db_name);
-			}
-		});
-	});
+    Map.MapGen();
 
 	stdin.addListener("data", function(d) {
 		var g = String(d).trim();
@@ -129,86 +198,154 @@ startup = () => {
 
 	app.listen(8080);
 
-	io.origins('*:*');
+    io.use((socket, next) => {
+        var hash = socket.request._query['hash'];
+        var username = socket.request._query['name'];
+        console.log("Connecting ", username, hash, socket.id);
+
+        if(!isValidHash(hash)){
+            console.log("Hash found invalid, closing connection to", username);
+            // socket.close();
+            return;
+        }
+
+        insertUser(username, hash, socket);
+
+        clientSockets[socket.id] = hash;
+        next();
+    }); 
+
 	io.on('connection', function (socket) {
-		console.log('Connected');
-		socket.on('UpdateCoords', function(player) {
 
-			var ID = player.ID ;
+        socket.on('disconnect', function () {
+            if(!clientSockets[socket.id]) {
+                console.log('Something has gone wrong, A socket just disconnected that wasnt in' + 
+                    ' the Hash Auth Array. This means we dont have the hash the socket was using, ' +
+                    'worst case, we cant remove this user from the userArray, and he cant ' + 
+                    'login ever again, as the server will report he is already logged in.');
+            }
+            else {
+                var idx = userArray.findIndex((s) => s.userHash === clientSockets[socket.id]);
+                var user = userArray[idx];
+                rtree.remove({x: user.x, y: user.y, w: playerRectWidth, h: playerRectHeight});
+                userArray[idx] = {};
+                console.log('Disconnected', clientSockets[socket.id], user.userName);
+                delete clientSockets[socket.id];
+            }
+        });
 
-			userPositionsX[ID] = player.x;
-			userPositionsY[ID] = player.y;
 
-			console.log("Changed Position of User #" + (ID+1) + " to (" + userPositionsX[ID] + "," + userPositionsY[ID] + ").");
+		socket.on('tick', function(player) {
+            if(!authenticate(socket, player.hash)){
+                return;
+            }
+            
+			var ID = player.ID;
+            var speed = 5, attackTimeout = 20;
 
+            var x = userArray[ID-1].x, oldX = x;
+            var y = userArray[ID-1].y, oldY = y;
 
+            var currentObjects = userArray[ID-1].currentObjects;
+            userArray[ID-1].ticksSinceLastAttack++;
+
+            if (player.mouseDown && Map.findNearestPlayer(ID-1) != -1) {
+                if(userArray[ID-1].ticksSinceLastAttack > attackTimeout){
+                    userArray[ID-1].attackTime = Date.now();
+                    userArray[ID-1].ticksSinceLastAttack = 0;
+                    userArray[ID-1].np = Map.findNearestPlayer(ID-1), factor = 1;
+                    userArray[ID-1].isAttacked = true ;
+                    userArray[ID-1].attackPartner = userArray[ID-1].np ;
+                    userArray[userArray[ID-1].np].attackPartner = ID-1 ;
+                    userArray[userArray[ID-1].np].isAttacked = true ;
+                    if (userArray[ID-1].currentWeapon != null) {
+                        factor = userArray[ID-1].currentWeapon.damage ;
+                    }
+                    if (userArray[ID-1].np >= 0 && userArray[userArray[ID-1].np].health > 0) {
+                        userArray[userArray[ID-1].np].health -= factor;
+                        console.log('Add an attack indicator here');
+
+                        if (userArray[userArray[ID-1].np].health <= 0) {
+                            rtree.remove({x: userArray[userArray[ID-1].np].x, y: userArray[userArray[ID-1].np].y, w: playerRectWidth, h: playerRectHeight});
+                            userArray[userArray[ID-1].np] = User(userArray[userArray[ID-1].np].userName, userArray[userArray[ID-1].np].userHash, 1000,1000);
+                            userArray[userArray[ID-1].np].np = userArray[ID-1].np ;
+                            userArray[userArray[ID-1].np].attackPartner = null ;
+                            userArray[userArray[ID-1].np].isAttacked = false ;
+                            rtree.insert({
+                                x: userArray[userArray[ID-1].np].x,
+                                y: userArray[userArray[ID-1].np].y,
+                                w: playerRectWidth,
+                                h: playerRectHeight
+                            },11);          
+                        }
+                    }
+                }
+            }
+
+            if (userArray[ID-1].health <= 0) {
+                // Remove from rtree
+                socket.emit('UserId', {x:userArray[ID-1].x, y:userArray[ID-1].y, ID:(ID-1)})                
+            }
+            if (userArray[ID-1].attackTime)
+            {
+                if (Date.now() - userArray[ID-1].attackTime >= 5000)
+                {
+                    userArray[ID-1].np = ID-1;
+                    userArray[ID-1].isAttacked = false ;
+                    userArray[ID-1].attackPartner = null ;
+                    userArray[userArray[ID-1].np].attackPartner = null ;
+                    userArray[userArray[ID-1].np].isAttacked = false ;
+                }
+            }
+            var res = null;
+            if(player.bWDown) {
+                res = coll({x:player.x,y:player.y-speed,w:playerRectWidth,h:playerRectHeight}, y, -speed, (s) => s >= 0);
+                if (res) if (res.pos!=null && !res.status) y = res.pos;
+            }
+            if(player.bADown) {
+                res = coll({x:player.x-speed,y:player.y,w:playerRectWidth,h:playerRectHeight}, x, -speed, (s) => s >= 0);
+                if (res) if (res.pos!=null && !res.status) x = res.pos;
+            }
+            if(player.bSDown) {
+                res = coll({x:player.x,y:player.y+speed,w:playerRectWidth,h:playerRectHeight}, y, speed, (s) => s <= MapSize - playerRectHeight);
+                if (res) if (res.pos!=null && !res.status) y = res.pos;
+            }
+            if(player.bDDown) {
+                res = coll({x:player.x+speed,y:player.y,w:playerRectWidth,h:playerRectHeight}, x, speed, (s) => s <= MapSize - playerRectWidth);
+                if (res) if (res.pos!=null && !res.status) x = res.pos;
+            }
+
+            if(res && res.status) {
+                if(Weapons.isWeapon(res.arr[1])){
+                    Weapons.weaponRemove(res.rect);
+                    Weapons.updateWeapon(res.arr[1],ID-1);
+                }
+            }
+
+            rtree.remove({x: oldX, y: oldY, w: playerRectWidth, h: playerRectHeight});
+            rtree.insert({x: x, y: y, w: playerRectWidth, h: playerRectHeight}, 11);
+            userArray[ID-1].x = x;
+            userArray[ID-1].y = y;
+
+            //The list of objects within user's view
+           	var emitObjects = rtree.search({x:player.cameraX,y:player.cameraY,w:player.canvasWidth,h:player.canvasHeight},true);
+            
+            userArray[ID-1].currentObjects = emitObjects.slice();
+
+            socket.emit('MapGen', {ObjectList : emitObjects,  UserPositionX : x, UserPositionY : y, curId : ID, weapons : userArray[ID-1].weapons, health : userArray[ID-1].health, isAttacked : userArray[ID-1].isAttacked, attackPartner : userArray[ID-1].attackPartner, partnerHealth : userArray[userArray[ID-1].np].health, partnerX : userArray[userArray[ID-1].np].x, partnerY : userArray[userArray[ID-1].np].y});
 		});
-		socket.on('Username', function (data) {
-			var doesHashExist = 1 ;
-			while (doesHashExist == 1)
-			{
-				var hash = '';	
-				var chars = '0123456789abcdefghijklmnopqrstuvwxyz';
-	    		for (var i = 4; i > 0; --i) hash += chars[Math.floor(Math.random() * chars.length)];
-	    		doesHashExist = 0 ; // replace this later	
-	    		// set doesHashExist = 0 if mongodb doesn't have this hash
-	    	}  		
-    		var doesAccountExist = 0 ;
-    		// Add user to MongoDB if user has not already registered. 
-    		// Set doesAccountExist = 1 if user has registered. 
-    		if (doesAccountExist == 1)
-    		{
-    			socket.emit('AccountExists', doesAccountExist);
-    			return ;
-    		}
-    		console.log("New user " + data.id + " registered. Assigned Hash key " + hash);
-    		// Make mongoDB account. 
-    		console.log("Logging in");
 
-    		var curId = userNames.push(data.id) - 1;
-    		console.log(curId);
-    		userHashes.push(hash);
-    		userWindowWidth.push(data.windowWidth);
-    		userWindowHeight.push(data.windowHeight);
-    		userPositionsX.push(Math.floor(Math.random() * (mapSquareSize - userWindowWidth[curId])) + 0);
-    		userPositionsY.push(Math.floor(Math.random() * (mapSquareSize - userWindowHeight[curId])) + 0);
-    		console.log("### CURRENT USER DETAILS : USER #" + (curId+1) + " ###");
-    		console.log("Username = " + userNames[curId]);
-    		console.log("Hash = " + userHashes[curId]);	
-    		console.log("UserWindowWidth = " + userWindowWidth[curId]);	
-    		console.log("UserWindowHeight = " + userWindowHeight[curId]);	
-    		console.log("UserPositionX = " + userPositionsX[curId]);
-    		console.log("UserPositionY = " + userPositionsY[curId]);
-
-    		// Let's create tree objects
-    		for (var i = 1 ; i <= 100000 ; i++)
-    		{
-    			var tree = new Object();
-    			tree.x = Math.floor(Math.random() * (mapSquareSize)) + 0 ;
-    			tree.y = Math.floor(Math.random() * (mapSquareSize)) + 0 ;
-    			tree.l = 10 ;
-    			tree.b = 20 ;
-    			tree.color = "#111199";
-    			listOfObjects.push(tree);
-    		}
-    		for (var i = 1 ; i <= 100000 ; i++)
-    		{
-    			var rock = new Object();
-    			rock.x = Math.floor(Math.random() * (mapSquareSize)) + 0 ;
-    			rock.y = Math.floor(Math.random() * (mapSquareSize)) + 0 ;
-    			rock.l = 10 ;
-    			rock.b = 10 ;
-    			rock.color = "#000000";
-    			listOfObjects.push(rock);
-    		}
-    		// Initialize all objects on Map like this and pass it to MapGen
-
-    		socket.emit('MapGen', {ObjectList : listOfObjects,  UserPositionX : userPositionsX[curId], UserPositionY : userPositionsY[curId], curId : curId});
-
-		});
 	});
 
-	console.log('Server Started');
+    console.log('Server Started\n\n');
+	console.log('Resolve update() -> "UpdateCoords" -> "MapGen" -> draw()');
+    console.log('3 RTrees 1) static colliders, 2) items 3) Biomes')
+    console.log('Merge Client Sockets and User Array into single array');
+    console.log('Implement a Server and Client timeout after you press mouse button');
+    console.log('Implement Damage Indicator client Side');
+    console.log('Eliminate findNearestPlayer() and use a range instead');
+    console.log('Why is there slicing on line 315?');
+    console.log('Items class and make it collide with the RTree\n\n');
 
 }
 

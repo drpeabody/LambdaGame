@@ -4,15 +4,18 @@
 	<meta charset="utf-8">
 	<title>The Lambda Game</title>
 	<style type="text/css">
+		h1 {
+			color: 	#fff;
+		}	
 		body {
-			background: #112;
+			background: linear-gradient(#224, #112);
 		}
 		canvas {
 			border : 0px;
 		}
 		#login-form {
 			color: #fff;
-			margin-top: 40vh;
+			margin-top: 20vh;
 			text-align: center;
 		}
 		.row {
@@ -24,21 +27,38 @@
 			font-size: 2em;
 			margin-bottom: 5vh;
 		}
+		.btn {
+			margin: 1%; 
+			padding: 1%;
+			display: inline-flex;
+			background: #484;
+			align-content: center;
+			border: none;
+			border-radius: 1vw;
+			cursor: pointer;
+			-webkit-touch-callout: none; /* iOS Safari */
+			-webkit-user-select: none; /* Safari */
+			-khtml-user-select: none; /* Konqueror HTML */
+			-moz-user-select: none; /* Firefox */
+			-ms-user-select: none; /* Internet Explorer/Edge */
+			user-select: none; /* Non-prefixed version, currently
+			                  supported by Chrome and Opera */
+		}
 	</style>
 </head>
 <body>
 	<div id="login-form">
-		<label id="input-form-label" class="label">Enter your username if you are logging in for the First Time, or your Hash Key if you already have an account. </label>
+		<h1> Welcome to the Lambda Game. </h1>
+		<label id="input-form-label" class="label">  You must Register or Login to continue. </label>
 		<div class="row">
 			Username: <input type="text" name="UserName" id="username">
 		</div>
-
 		<div class="row">
-			Key : <input type="Password" name="Password" id="password">
+			Password: <input type="Password" name="Password" id="password">
 		</div>
 		<div class="row">
-			<input type="button" value="Register" id="btn-register">
-			<input type="button" value="Login" id="btn-login">
+			<div class="btn" value="Register" id="btn-register"> Register  </div>
+			<div class="btn" value="Login" id="btn-login"> Login  </div>
 		</div>
 	</div>
 	<canvas id="fuckyou"></canvas>
@@ -46,144 +66,324 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
 <script type="text/javascript">
 	g = (id) => document.getElementById(id);
-	var hasAskedOnce = false;
-	var playerSquareSize = 50;
-	var correctionFactor = 0.95 ;
-	// clientMap
+	request = (method, url, data, callback) => {
+		var httpRequest = new XMLHttpRequest();
+		
+		if(!httpRequest) {
+			alert('Please use a web browser of this age.');
+			return false;
+		}
 
-	connect = (id) => {
-		// io.origins('*:*');
-		// socket = io('http://192.168.0.130:8080/', {id: id});
-		socket = io('http://localhost:8080/', {id: id});
-		socket.emit('Username', {id: id, windowWidth : (window.innerWidth * correctionFactor), windowHeight : (window.innerHeight*correctionFactor)});
-		socket.on('AccountExists', function(doesAccountExist) {
-			g('input-form-label').innerHTML = 'This username already exists';
-		});
-		socket.on('MapGen', function(data) {
-			// Clear the div out
-			var elem = document.getElementById("login-form");
+		httpRequest.onreadystatechange = callback;
+		httpRequest.open(method, url);
+    	httpRequest.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+		httpRequest.send(JSON.stringify(data));
+		return httpRequest;
+	}
+	url = 'http://localhost:8080';
+
+	var wSRW = 30;
+	var hSRW = 30;
+	var correctionFactor = 0.95 ;
+	var playerRectWidth = 27 ;
+	var playerRectHeight = 48 ;
+	var debug = null;
+
+	canvas = document.getElementById("fuckyou");
+	var ctx = canvas.getContext('2d');
+	var images = {};
+
+	var imageUrls = {
+		tree: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550645217/output-onlinepngtools.png',
+		grass: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550772946/grass_block_top_n.png',
+		rock: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550657582/Rock.png',
+		water: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550772947/WATER2.png',
+		snow: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550781217/snow.png',
+		sand: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550772947/sand.png',
+		sword: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1550735072/Sword.png',
+		playerStandFront: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1551510990/New%20Sprites/Playo%21%21r/StandUp.png',
+		playerStandLeft: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1551510990/New%20Sprites/Playo%21%21r/StandLeft.png',
+		playerStandRight: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1551510990/New%20Sprites/Playo%21%21r/StandRight.png',
+		playerStandDown: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1551510990/New%20Sprites/Playo%21%21r/StandDown.png',
+		playerMoveFront1: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1551543857/New%20Sprites/Playo%21%21r/WalkUp1.png',
+		playerMoveFront2: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1551543858/New%20Sprites/Playo%21%21r/WalkUp2.png',
+		playerMoveFront3: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1551510990/New%20Sprites/Playo%21%21r/StandUp.png',
+		playerMoveFront4: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1551510990/New%20Sprites/Playo%21%21r/StandUp.png',
+		playerMoveRight1: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1551539509/New%20Sprites/Playo%21%21r/WalkRight1.png',
+		playerMoveRight2: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1551539509/New%20Sprites/Playo%21%21r/WalkRight2.png',
+		playerMoveRight3: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1551584800/New%20Sprites/Playo%21%21r/WalkRight1.5.png',
+		playerMoveRight4: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1551584800/New%20Sprites/Playo%21%21r/WalkRight1.5.png',
+		playerMoveLeft1: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1551539270/New%20Sprites/Playo%21%21r/WalkLeft1.png',
+		playerMoveLeft2: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1551539270/New%20Sprites/Playo%21%21r/WalkLeft2.png',
+		playerMoveLeft3: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1551584799/New%20Sprites/Playo%21%21r/WalkLeft1.5.png',
+		playerMoveLeft4: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1551584799/New%20Sprites/Playo%21%21r/WalkLeft1.5.png',
+		playerMoveDown1: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1551540889/New%20Sprites/Playo%21%21r/WalkD1.png',
+		playerMoveDown2: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1551540891/New%20Sprites/Playo%21%21r/WalkD2.png',
+		playerMoveDown3: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1551510990/New%20Sprites/Playo%21%21r/StandDown.png',
+		playerMoveDown4: 'https://res.cloudinary.com/do3uy82tk/image/upload/v1551510990/New%20Sprites/Playo%21%21r/StandDown.png'
+	}
+	for (var key in imageUrls) {
+		images[key] = new Image();
+		images[key].src = imageUrls[key] ; 
+	}
+	var player = null;
+	var localPlayer = {
+		dir: 'Down', // One of ['L', 'R', 'F', 'D']
+		framesPerImage: 6,
+		frameCounter: 0,
+		imgState: 1, // Keeps switching between 1 and 2 and 3 and 4
+		count: (plr) => {
+			if(plr.bDDown) localPlayer.dir = 'Right';
+			if(plr.bWDown) localPlayer.dir = 'Front';
+			if(plr.bSDown) localPlayer.dir = 'Down';
+			if(plr.bADown) localPlayer.dir = 'Left';
+
+			if(plr.bDDown || plr.bWDown || plr.bSDown || plr.bADown){
+				if(localPlayer.frameCounter > localPlayer.framesPerImage){
+					localPlayer.frameCounter = 0;
+					if(localPlayer.imgState === 1) localPlayer.imgState = 3;
+					else if(localPlayer.imgState === 2 )localPlayer.imgState = 4 ;
+					else if(localPlayer.imgState === 3 )localPlayer.imgState = 2 ;
+					else if(localPlayer.imgState === 4 )localPlayer.imgState = 1 ;
+				}
+				else 
+					localPlayer.frameCounter ++;
+			}
+		},
+		getImage: (plr) => {
+			var moving = plr.bDDown || plr.bWDown || plr.bSDown || plr.bADown;
+			if(moving){
+				return images['playerMove' + localPlayer.dir + String(localPlayer.imgState)];
+			}
+			else return images['playerStand' + localPlayer.dir];
+		}
+	}
+
+	function User(x,y,cameraX, cameraY, id, width, height, hash, health, isAttacked, attackPartner)	{
+		return {
+	        x : x ,
+	        y : y ,
+	        cameraX : cameraX ,
+	        cameraY : cameraY ,
+	        bwDown : false ,
+	        bADown : false ,
+	        bSDown : false ,
+	        bDDown : false ,
+	        mouseDown : false,
+	        ID: id,
+	        canvasWidth: width,
+	        canvasHeight: height,
+	        hash: hash,
+	        health : 100,
+	        isAttacked : false,
+	        attackPartner : null,
+	        partnerHealth : 100,
+	        partnerX : null,
+	        partnerY : null
+	    }
+	}
+
+	setEventListeners = () => {
+		document.onkeydown = (e) => {
+			// console.log("Key Pressed " + e.key);
+			var key = e.key ;
+			if ((key === 'w')||(key === 'W')) player.bWDown = true ;
+			if ((key === 'a')||(key === 'A')) player.bADown = true ;
+			if ((key === 's')||(key === 'S')) player.bSDown = true ;
+			if ((key === 'd')||(key === 'D')) player.bDDown = true ;
+		}
+
+		document.onkeyup = (e) => {
+			var key = e.key ;
+			if ((key === 'w')||(key === 'W')) player.bWDown = false ;
+			if ((key === 'a')||(key === 'A')) player.bADown = false ;
+			if ((key === 's')||(key === 'S')) player.bSDown = false ;
+			if ((key === 'd')||(key === 'D')) player.bDDown = false ;
+		}
+		document.onmousedown = (e) => {
+			player.mouseDown = true ;
+		}
+		document.onmouseup = (e) => {
+			player.mouseDown = false ;
+		}
+	}
+
+	connect = (username, hash) => {
+
+		// socket = io(url, {query: "hash=" + hash + "&name=" + username});
+		socket = io(url, {query: "hash=" + hash + "&name=" + username, 'reconnection': false});
+
+		socket.on('UserId', function(plr){
+			var elem = g("login-form");
 			elem.parentNode.removeChild(elem);
-			// Init canvas
-			canvas = document.getElementById("fuckyou");
+
 			canvas.width = window.innerWidth * correctionFactor;
 			canvas.height = window.innerHeight * correctionFactor;
-			ctx = canvas.getContext('2d');
-			mapSize = 4000;
 
-			player = {
-				x: data.UserPositionX, y: data.UserPositionY,
-				bWDown: false, bADown: false, bSDown: false, bDDown: false //Input Tracking var
-			}
+            player = User(plr.x, plr.y, plr.cameraX, plr.cameraY, plr.ID, canvas.width, canvas.height, hash);
+            
+            setEventListeners();
+			update();
 
-			// tree = {
-			// 	// x: Math.random()*mapSize, y: Math.random()*mapSize
-			// 	x: player.x + 30, y: player.y + 30
-			// }
-
-			document.onkeydown = (e) => {
-				// console.log("Key Pressed " + e.key);
-				var key = e.key ;
-				if ((key === 'w')) player.bWDown = true ;
-				if ((key === 'a')) player.bADown = true ;
-				if ((key === 's')) player.bSDown = true ;
-				if ((key === 'd')) player.bDDown = true ;
-			}
-
-			document.onkeyup = (e) => {
-				var key = e.key ;
-				if ((key === 'w')) player.bWDown = false ;
-				if ((key === 'a')) player.bADown = false ;
-				if ((key === 's')) player.bSDown = false ;
-				if ((key === 'd')) player.bDDown = false ;
-			}
-
-			draw = () => {
-
-				ctx.fillStyle = "#113311";
-				ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-				ctx.fillStyle = "#441111";
-				ctx.fillRect(canvas.width/2, canvas.height/2, 10, 10);
-
-				// ctx.fillStyle = "#111199";
-				// ctx.fillRect(tree.x - player.x, tree.y - player.y, 20, 20);
-
-				for (var i = 0 ; i < data.ObjectList.length ; i++)
-				{
-					if (data.ObjectList[i].x >= player.x && data.ObjectList[i].x <= (player.x + canvas.width) && data.ObjectList[i].y >= player.y && data.ObjectList[i].y <= (player.y + canvas.height))
-					{
-						console.log("This object has been rendered.")
-						ctx.fillStyle = data.ObjectList[i].color ;
-						ctx.fillRect(data.ObjectList[i].x - player.x, data.ObjectList[i].y - player.y, data.ObjectList[i].l, data.ObjectList[i].b);
-					}
-				}
-
-				requestAnimationFrame(draw);
-
-				update();
-			}
-
-			update = () => {
-				//Sync with server - All Socet.emit here
-				//Process input
-
-				var speed = 5 ;
-				var verificationSquareSize = 300 * speed ;
-				// Temporary Fix : 
-				// if (Math.abs(player.x - data.UserPositionX) <= verificationSquareSize && Math.abs(player.y - data.UserPositionY) <= verificationSquareSize)
-				if (true)
-				{
-					if (player.bWDown) {player.y -= speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
-					if (player.bADown) {player.x -= speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
-					if (player.bSDown) {player.y += speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
-					if (player.bDDown) {player.x += speed; socket.emit('UpdateCoords', {x:player.x , y:player.y , ID : data.curId});}
-				}
-				// Figure out some way of verification server-side
-				//socket.emit('requestMap', x, y, width,height)
-			}
-			draw();
-
-			// draw();
 		});
-		// socket.on('news', function (data) {
-		// 	console.log(data);
-		// 	socket.emit('my other event', { my: 'data' });
-		// });
-	}
-	// connectPwd = (pwd) => {
-	// 	// io.origins('*:*');
-	// 	// socket = io('http://192.168.110.68:8080/', {id: id, pwd: pwd});
-	// 	socket = io('http://localhost:8080/', {pwd: pwd});
-	// 	socket.on('news', function (data) {
-	// 		console.log(data);
-	// 		socket.emit('my other event', { my: 'data' });
-	// 	});
-	// }
+		draw = (data) => {
 
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+				
+			var w = Math.floor(player.x / canvas.width),
+			 h = Math.floor(player.y / canvas.height);
+
+			// Add black regions to the end of the map
+
+			for(var x = w-1; x <= w + 1; x++){
+				for (var y = h-1; y <= h + 1; y++) {
+					if(x < 0 || y < 0) continue;
+					ctx.drawImage(images['grass'], 
+						x * canvas.width - player.cameraX, y * canvas.height - player.cameraY, 
+						canvas.width, canvas.height);		
+				}
+			}
+
+			debug = data;
+
+			for(var obj of data.ObjectList)
+			{
+
+				// var obj = data.ObjectList[i];
+				// console.log("Here");
+
+				var x = obj.x - player.cameraX;
+				var y = obj.y - player.cameraY;
+				switch(obj.leaf)
+				{
+					// case -1:
+					// 	ctx.drawImage(images['grass'], x, y);
+					// break ;
+					case 1 :
+						ctx.drawImage(images['rock'], x, y);
+					break;
+					case 2 :
+						ctx.drawImage(images['tree'], x, y);
+					break ;
+					case 3:
+						ctx.drawImage(images['sword'],x,y);
+					break;
+					case 4:
+						ctx.fillStyle = '#000';
+						ctx.fillRect(x, y, obj.w, obj.h);
+						break ;
+					case 5:
+						ctx.fillStyle = '#000';
+						ctx.fillRect(x, y, obj.w, obj.h);
+						break ;
+					case 6:
+						ctx.drawImage(images['snow'], x, y);
+					break ;
+					case 7:
+						ctx.drawImage(images['sand'], x, y);
+					break ;
+					case 11:
+						ctx.drawImage(localPlayer.getImage(player), x, y);
+						break ;
+				}
+			}
+			if (player.isAttacked) // Generate health bar of player and foe
+			{
+				console.log(player.partnerX);
+				ctx.fillStyle = "#FF0000" ;
+				ctx.fillRect(player.x - player.cameraX ,player.y - player.cameraY - 30, 0.01*playerRectWidth*player.health, 10);
+				ctx.fillRect(player.partnerX - player.cameraX,player.partnerY - player.cameraY - 30, 0.01*playerRectWidth*player.partnerHealth, 10);
+				ctx.fillStyle = "#000000" ;
+				ctx.fillRect(player.x - player.cameraX + 0.01*playerRectWidth*player.health,player.y - player.cameraY - 30, 0.01*playerRectWidth*(100-player.health), 10);
+				ctx.fillRect(player.partnerX - player.cameraX + 0.01*playerRectWidth*player.partnerHealth,player.partnerY - player.cameraY - 30, 0.01*playerRectWidth*(100-player.partnerHealth), 10);
+			}
+		}
+		update = () => {
+			//Sync with server - All Socet.emit here
+			//Process input
+
+			socket.emit('tick', player);
+			localPlayer.count(player);
+			
+			
+			requestAnimationFrame(update);
+		}
+		socket.on('MapGen', function(data) {
+				player.x = data.UserPositionX;
+				player.y = data.UserPositionY;
+				player.cameraX = data.UserPositionX + playerRectWidth/2 - canvas.width/2;
+				player.cameraY = (data.UserPositionY + playerRectHeight/2 - canvas.height/2);
+				player.isAttacked = data.isAttacked ;
+				player.attackPartner = data.attackPartner ;
+				player.health = data.health ;
+				player.partnerHealth = data.partnerHealth ;
+				player.partnerX = data.partnerX ;
+				player.partnerY = data.partnerY ;
+				draw(data);	
+			});
+	}
 	g('btn-register').addEventListener('click', () => {
 		var name = g('username').value;
-		if(!name|| name === ''){
+		var pwd = g('password').value;
+
+		if(!name || name === ''){
 			g('input-form-label').innerHTML = 'Please Enter a valid Username';
 			return;
 		}
-		if(hasAskedOnce){
-			g('input-form-label').innerHTML = 'Please wait while we register you with our servers.';
-			connect(name);
-		} else {
-			g('input-form-label').innerHTML = 'Please Reconfirm Your Password (without your '+
-			'password you will lose access to your inventory) and click Register again.';
-			hasAskedOnce = true;
+		if(!pwd || pwd === '' || pwd.length < 8){
+			g('input-form-label').innerHTML = 'Please Enter a valid Password of at least 8 characters.';
+			return;
 		}
+
+		var req = request('POST', url + '/register', { username: name, pwd: pwd }, (val) => {
+			if(!req || req.readyState !== 4) return;
+			if(req.responseText === 'Registered'){
+				//Successfully Registered, Login
+				g('btn-login').click();
+			}
+			else {
+				g('input-form-label').innerHTML = req.responseText;
+			}
+		});
+
 	});
 
 	g('btn-login').addEventListener('click', () => {
-		// var pass = g('password').value ;
-		// if (!pass || pass === '')
-		// {
-		// 	g('input-form-label').innerHTML = 'Please enter a valid password';
-		// 	return ;
-		// }
+		var name = g('username').value;
+		var pwd = g('password').value;
+		var resetLater = () => {
+			setTimeout(() => {
+				g('input-form-label').innerHTML = 'You must Register or Login to continue.';
+			}, 3000);
+		}
+
+		if(!name || name === ''){
+			g('input-form-label').innerHTML = 'Please Enter a valid Username';
+			resetLater();
+			return;
+		}
+		if(!pwd || pwd === '' || pwd.length < 8){
+			g('input-form-label').innerHTML = 'Please Enter a valid Password of at least 8 characters.';
+			resetLater();
+			return;
+		}
+
+		var req = request('POST', url + '/login', { username: name, pwd: pwd }, (val) => {
+			if(!req || req.readyState !== 4) return;
+			var res = JSON.parse(req.responseText);
+			g('input-form-label').innerHTML = res.desc;
+			console.log(res);
+			if(res.status) connect(name, res.token);
+			else resetLater();
+		});
 
 	});
+	document.onkeyup = (e) => {
+				if (e.keyCode == 13)
+				{
+					console.log("Pressed");
+					g('btn-login').click();
+				}
+			}
 </script>
 </html>
